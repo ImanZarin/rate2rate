@@ -1,19 +1,20 @@
-import mongoose, {Schema, Document} from 'mongoose';
+import {Schema, Document} from 'mongoose';
 
 export interface IBody extends Document {
+    _id: string;
     bodyUserId: string;
     userId: string;
     rate: number;
   }
 
 
-let BodyScema: Schema = new Schema({
+let BodySchema: Schema = new Schema({
     bodyUserId: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: "User"
     },
     userId: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: "User"
     },
     rate: {
@@ -30,7 +31,7 @@ export interface IUser extends Document {
     bodies: [IBody];
   }
   
-let UserSchema: Schema = new Schema({
+export const UserSchema: Schema = new Schema({
     firstname: {
         type: String,
         default: ""
@@ -43,7 +44,7 @@ let UserSchema: Schema = new Schema({
         type: Boolean,
         default: false
     },
-    bodies: [BodyScema]
+    bodies: [BodySchema]
 });
 
-module.exports = mongoose.model<IUser>('User', UserSchema);
+//module.exports = mongoose.model<IUser>('User', UserSchema);

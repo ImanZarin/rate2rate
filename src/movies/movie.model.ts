@@ -1,13 +1,16 @@
 import * as mongoose from 'mongoose';
+import { Constants } from '../../app.constants';
+import { Document } from 'mongoose';
 
 export interface IMovie extends Document {
+    _id: string;
     title: string;
     year: number;
     brief: string;
     imageUrl: string;
     genre: string[];
     cast: string[];
-};
+}
 
 export const MovieSchema = new mongoose.Schema({
     title: {

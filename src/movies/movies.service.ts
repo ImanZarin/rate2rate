@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { IMovie } from './movie.model';
-import { Model } from 'mongoose';
+import { Model, Document } from 'mongoose';
+
 
 @Injectable()
 export class MovieService {
-    private Movies: IMovie[] = [];
 
     constructor(@InjectModel('Movie') private readonly movieModel: Model<IMovie>) {
 
@@ -35,18 +35,21 @@ export class MovieService {
     }
 
     async search(title: string, yr: number): Promise<string> {
-        const result = await this.movieModel.find({ title: title, year: yr });
-        return result.id as string;
+        const result = await this.movieModel.findOne({ title: title, year: yr });
+        if (result)
+            return result._id as string;
+        else
+            return null;
     }
 
     async delete(id: string) {
-        const result = await this.movieModel.delete({ _id: id });
+        const result = await this.movieModel.deleteOne({ _id: id });
         return result;
     }
 
     async update(id: string, title: string, yr: number, brief: string, imgUrl: string, genre: string[], cast: string[])
         : Promise<IMovie> {
-        const updated = await this.movieModel.findById(id);
+        const updated: Document = await this.movieModel.findById(id);
         if (title)
             updated.title = title;
         if (yr)
@@ -60,6 +63,6 @@ export class MovieService {
         if (cast)
             updated.cast = cast;
         updated.save();
-        return updated;
+        return updated as IMovie;
     }
 }
