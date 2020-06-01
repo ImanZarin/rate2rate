@@ -25,24 +25,28 @@ let BodySchema: Schema = new Schema({
 });
 
 export interface IUser extends Document {
-    firstName: string;
-    lastName: string;
+    _id: string,
+    username: string;
+    email: string;
     admin: boolean;
     bodies: [IBody];
   }
   
 export const UserSchema: Schema = new Schema({
-    firstname: {
+    username: {
         type: String,
-        default: ""
+        default: "",
+        required: true
     },
-    lastname: {
+    email: {
         type: String,
-        default: ""
+        default: "",
+        required: true
     },
     admin: {
         type: Boolean,
-        default: false
+        default: false,
+        required: true
     },
     bodies: [BodySchema]
 });

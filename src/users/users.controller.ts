@@ -14,22 +14,22 @@ export class UserController {
 
     @Put('/signup')
     async create(
-        @Body('firstname') f: string,
-        @Body('lastname') l: string
+        @Body('username') u: string,
+        @Body('email') e: string
     ) {
-        let id: string = await this.userService.create(f, l);
+        let id: string = await this.userService.create(u, e);
         return id;
     }
 
-    @Put()
-    async search(
-        @Body('firstname') f: string,
-        @Body('lastname') l: string
-    ): Promise<string> {
-        let id: string = await this.userService.search(f, l);
-        if (id)
-            return id;
-    }
+    // @Put()
+    // async search(
+    //     @Body('username') f: string,
+    //     @Body('lastname') l: string
+    // ): Promise<string> {
+    //     let id: string = await this.userService.search(f, l);
+    //     if (id)
+    //         return id;
+    // }
 
     @Delete(':id')
     async delete(@Param('id') id: string): Promise<string> {

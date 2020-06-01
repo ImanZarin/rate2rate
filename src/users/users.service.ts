@@ -15,12 +15,14 @@ export class UserService {
         return result;
     }
 
-    async create(fname: string, lname: string): Promise<string> {
-        const sameUserId = await this.search(fname, lname);
+    async create(username: string, email: string): Promise<string> {
+        let sameUserId = await this.searchName(username);
+        if (!sameUserId)
+            sameUserId = await this.searchEmail(email);
         if (!sameUserId) {
             const newUser = new this.userModel({
-                firstname: fname,
-                lastname: lname,
+                username: username,
+                email: email,
                 admin: false,
                 bodies: []
             });
@@ -36,8 +38,13 @@ export class UserService {
         return result;
     }
 
-    async search(fname: string, lname: string): Promise<string> {
-        const result = await this.userModel.findOne({ firstname: fname, lastname: lname });
+    async searchName(name: string): Promise<string> {
+        const result = await this.userModel.findOne({ username: name });
+        return result._id as string;
+    }
+
+    async searchEmail(email: string): Promise<string> {
+        const result = await this.userModel.findOne({ email: email });
         return result._id as string;
     }
 
