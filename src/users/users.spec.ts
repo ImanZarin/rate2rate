@@ -29,14 +29,43 @@ describe('users', () => {
         expect(execMock).toHaveBeenCalledTimes(1);
     })
 
-    // it('create', async () => {
+    it('create/repeted', async () => {
+        const app = await Test.createTestingModule({
+            providers: [
+                {
+                    provide: getModelToken('User'),
+                    useValue: {
+                        findOne: () => Promise.resolve({
+                            "_id": "5eb10b521852d65394a418da",
+                            "username": "srk",
+                            "email": "",
+                            "admin": false
+                        }),
+                    },
+                },
+                UserService,
+            ]
+        }).compile();
+        const uService = app.get(UserService);
+        const r = await uService.create('testname', 'test@etest.mail');
+        expect(r).toBeNull;
+    })
+
+    // it('create/new', async () => {
     //     const app = await Test.createTestingModule({
     //         providers: [
     //             {
     //                 provide: getModelToken('User'),
     //                 useValue: jest.fn().mockImplementation((a1) => {
     //                     return Object.assign(a1, {
+    //                         findOne: () => Promise.resolve({
+    //                             "_id": "5eb10b521852d65394a418da",
+    //                             "username": "srk",
+    //                             "email": "",
+    //                             "admin": false
+    //                         }),
     //                         save: () => Promise.resolve({ id: "5eb10b521852d65394a418da" }),
+
     //                     });
     //                 }),
     //             },
@@ -48,6 +77,7 @@ describe('users', () => {
     //     expect(r).toBe("5eb10b521852d65394a418da");
     // })
 
+  
     it('find', async () => {
         const app = await Test.createTestingModule({
             providers: [
@@ -89,7 +119,7 @@ describe('users', () => {
         }).compile();
         const mService = app.get(UserService);
         const r = await mService.searchName("srk");
-        expect(r).toBe("5eb10b521852d65394a418da");
+        expect(r._id).toBe("5eb10b521852d65394a418da");
     })
 
     it('searchE', async () => {
@@ -111,7 +141,7 @@ describe('users', () => {
         }).compile();
         const mService = app.get(UserService);
         const r = await mService.searchEmail("test@yahoo.com");
-        expect(r).toBe("5eb10b521852d65394a418da");
+        expect(r._id).toBe("5eb10b521852d65394a418da");
     })
 
     it('delete', async () => {

@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Put, Body, Param, Delete, Options } from '@nestjs/common';
 import { UserService } from './users.service';
 import { IUser } from './user.model';
 import { strict } from 'assert';
@@ -13,6 +13,7 @@ export class UserController {
     }
 
     @Put('/signup')
+    
     async create(
         @Body('username') u: string,
         @Body('email') e: string

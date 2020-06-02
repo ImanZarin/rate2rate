@@ -29,7 +29,7 @@ export class UserService {
             const result = await newUser.save();
             return result.id as string;
         }
-        else //user with same name exist
+        else //user exist
             return null;
     }
 
@@ -38,14 +38,14 @@ export class UserService {
         return result;
     }
 
-    async searchName(name: string): Promise<string> {
+    async searchName(name: string): Promise<IUser> {
         const result = await this.userModel.findOne({ username: name });
-        return result._id as string;
+        return result;
     }
 
-    async searchEmail(email: string): Promise<string> {
+    async searchEmail(email: string): Promise<IUser> {
         const result = await this.userModel.findOne({ email: email });
-        return result._id as string;
+        return result;
     }
 
     async delete(id: string) {
