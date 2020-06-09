@@ -1,7 +1,6 @@
-import { Controller, Get, Put, Body, Param, Delete, Options } from '@nestjs/common';
+import { Controller, Get, Put, Body, Param, Delete } from '@nestjs/common';
 import { UserService } from './users.service';
 import { IUser } from './user.model';
-import { strict } from 'assert';
 
 @Controller('users')
 export class UserController {
@@ -18,7 +17,7 @@ export class UserController {
         @Body('username') u: string,
         @Body('email') e: string
     ) {
-        let id: string = await this.userService.create(u, e);
+        const id: string = await this.userService.create(u, e);
         return id;
     }
 

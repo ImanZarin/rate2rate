@@ -1,9 +1,6 @@
-import { IMovie } from "./movie.model";
 import { MovieService } from "./movies.service";
-import { Test, TestingModule } from "@nestjs/testing";
-import { Model } from 'mongoose';
+import { Test } from "@nestjs/testing";
 import { getModelToken } from "@nestjs/mongoose";
-import { async } from "rxjs/internal/scheduler/async";
 
 describe('movies', () => {
     it('getAll', async () => {

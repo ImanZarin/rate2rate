@@ -8,7 +8,7 @@ export interface IBody extends Document {
   }
 
 
-let BodySchema: Schema = new Schema({
+const BodySchema: Schema = new Schema({
     bodyUserId: {
         type: Schema.Types.ObjectId,
         ref: "User"

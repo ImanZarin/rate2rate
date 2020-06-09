@@ -1,9 +1,6 @@
-import { IUser } from "./user.model";
 import { UserService } from "./users.service";
-import { Test, TestingModule } from "@nestjs/testing";
-import { Model } from 'mongoose';
+import { Test } from "@nestjs/testing";
 import { getModelToken } from "@nestjs/mongoose";
-import { async } from "rxjs/internal/scheduler/async";
 
 describe('users', () => {
     it('getAll', async () => {
@@ -51,33 +48,30 @@ describe('users', () => {
         expect(r).toBeNull;
     })
 
-    // it('create/new', async () => {
-    //     const app = await Test.createTestingModule({
-    //         providers: [
-    //             {
-    //                 provide: getModelToken('User'),
-    //                 useValue: jest.fn().mockImplementation((a1) => {
-    //                     return Object.assign(a1, {
-    //                         findOne: () => Promise.resolve({
-    //                             "_id": "5eb10b521852d65394a418da",
-    //                             "username": "srk",
-    //                             "email": "",
-    //                             "admin": false
-    //                         }),
-    //                         save: () => Promise.resolve({ id: "5eb10b521852d65394a418da" }),
+    it('create/new', async () => {
+        let modelMock = jest.fn().mockImplementation(a => {
+            return Object.assign(a ?? {}, {
+                save: () => Promise.resolve({ id: "5eb10b521852d65394a418da" }),
+            });
+        });
+        modelMock = Object.assign(modelMock, {
+            findOne: () => null
+        });
+        const app = await Test.createTestingModule({
+            providers: [
+                {
+                    provide: getModelToken('User'),
+                    useValue: modelMock,
+                },
+                UserService,
+            ]
+        }).compile();
+        const uService = app.get(UserService);
+        const r = await uService.create('testname', 'test@etest.mail');
+        expect(r).toBe("5eb10b521852d65394a418da");
+    })
 
-    //                     });
-    //                 }),
-    //             },
-    //             UserService,
-    //         ]
-    //     }).compile();
-    //     const uService = app.get(UserService);
-    //     const r = await uService.create('testname', 'test@etest.mail');
-    //     expect(r).toBe("5eb10b521852d65394a418da");
-    // })
 
-  
     it('find', async () => {
         const app = await Test.createTestingModule({
             providers: [

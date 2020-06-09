@@ -17,7 +17,7 @@ export class MovieUserController {
         @Body('rate') r: number,
         @Body('movieId') m: string,
     ): Promise<IMovieUser> {
-        let id: string = await this.muService.search(u, m);
+        const id: string = await this.muService.search(u, m);
         if (id) {
             return await this.muService.update(id, r);
         }

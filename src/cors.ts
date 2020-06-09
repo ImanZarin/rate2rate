@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { Constants } from "app.constants";
 
 const express = require('express');
 const cors = require('cors');
 
-const app = express();
+express();
 
-var corsOptionsDelegate = (req, callback) => {
-    var corsOption;
+const corsOptionsDelegate = (req, callback) => {
+    let corsOption;
     if (Constants.whiteList.indexOf(req.header('origin')) >= 0)
         corsOption = { origin: true };
     else

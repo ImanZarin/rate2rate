@@ -1,7 +1,6 @@
 import { Controller, Get, Put, Body, Param, Delete } from '@nestjs/common';
 import { MovieService } from './movies.service';
 import { IMovie } from './movie.model';
-import { strict } from 'assert';
 
 @Controller('movies')
 export class MovieController {
@@ -21,7 +20,7 @@ export class MovieController {
         @Body('genre') g: string[],
         @Body('imageUrl') i: string
     ): Promise<string> {
-        let id: string = await this.movieService.search(t, y);
+        const id: string = await this.movieService.search(t, y);
         if (id)
             return id;
         else

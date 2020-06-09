@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Constants } from 'app.constants';
 
-var config = require('../config');
+const config = require('../config');
 const port = config.port;
 const cors = require('./cors');
 
