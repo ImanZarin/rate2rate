@@ -9,7 +9,8 @@ import { IMovie } from 'src/movies/movie.model';
 @Injectable()
 export class MovieUserService {
 
-    constructor(@InjectModel('MovieUser') private readonly muModel: Model<IMovieUser>) {
+    constructor(@InjectModel('MovieUser') private readonly muModel: Model<IMovieUser>,
+        @InjectModel('Movie') private readonly mModel: Model<IMovie>) {
 
     }
 
@@ -33,13 +34,18 @@ export class MovieUserService {
         return result;
     }
 
-    async findForMovie(id: string): Promise<IUser[]> {
-        const result = await this.muModel.find({ movieId: id });
+    async findForUser(id: string): Promise<IMovie[]> {
+        const idList: IMovieUser[] = await this.muModel.find({ userId: id });
+        const result = await this.findAllMovies(idList);
         return result;
     }
 
-    async findForUser(id: string): Promise<IMovie[]> {
-        const result = await this.muModel.find({ userId: id });
+    async findAllMovies(idList: IMovieUser[]): Promise<IMovie[]> {
+        const result: IMovie[] = [];
+        for (const i of idList) {
+            const r = await this.mModel.findById(i.movieId);
+            result.push(r);
+        }
         return result;
     }
 

@@ -22,6 +22,6 @@ export const MovieUserSchema = new Schema({
         type: Number,
         required: true,
         min: Constants.minMovieRate,
-        max: Constants.minMovieRate
+        max: Constants.maxMovieRate
     }
 });

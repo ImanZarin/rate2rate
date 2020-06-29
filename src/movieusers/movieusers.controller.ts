@@ -1,6 +1,7 @@
 import { Controller, Get, Put, Body, Param, Delete } from '@nestjs/common';
 import { MovieUserService } from './movieusers.service';
 import { IMovieUser } from './movieusers.model';
+import { IMovie } from 'src/movies/movie.model';
 
 @Controller('movieusers')
 export class MovieUserController {
@@ -9,6 +10,11 @@ export class MovieUserController {
     @Get()
     async getAll(): Promise<IMovieUser[]> {
         return await this.muService.getAll();
+    }
+
+    @Get(':id')
+    async getMovies(@Param('id') id: string): Promise<IMovie[]> {
+        return await this.muService.findForUser(id);
     }
 
     @Put()
@@ -34,7 +40,7 @@ export class MovieUserController {
     @Put(':id')
     async update(
         @Param('id') id: string,
-        @Body('r') r: number, )
+        @Body('r') r: number,)
         : Promise<IMovieUser> {
         return await this.muService.update(id, r);
 
