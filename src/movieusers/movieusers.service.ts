@@ -2,16 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { IMovieUser } from './movieusers.model';
 import { Model, Document } from 'mongoose';
-import { IUser } from 'src/users/user.model';
 import { IMovie } from 'src/movies/movie.model';
-
+import { FindForUserResponse, MovieRate } from 'src/apiTypes';
+import { UserService} from '../users/users.service';
+import { IUser } from 'src/users/user.model';
+import { MovieService } from 'src/movies/movies.service';
 
 @Injectable()
 export class MovieUserService {
-
     constructor(@InjectModel('MovieUser') private readonly muModel: Model<IMovieUser>,
-        @InjectModel('Movie') private readonly mModel: Model<IMovie>) {
-
+        @InjectModel('Movie') private readonly mModel: Model<IMovie>,
+        //@InjectModel('User') private readonly uModel: Model<IUser>
+        ) {
     }
 
     async getAll(): Promise<IMovieUser[]> {
@@ -34,9 +36,26 @@ export class MovieUserService {
         return result;
     }
 
-    async findForUser(id: string): Promise<IMovie[]> {
+    async findForUser(id: string): Promise<FindForUserResponse> {
         const idList: IMovieUser[] = await this.muModel.find({ userId: id });
-        const result = await this.findAllMovies(idList);
+        const moviesT: IMovie[] = await this.findAllMovies(idList);
+        const ratedMovies: MovieRate[] = [];
+        for (const m of moviesT) {
+            const r = idList.find(mu => mu.movieId.toString() == m._id.toString()).rate;
+            ratedMovies.push({
+                _id: m._id,
+                title: m.title,
+                year: m.year,
+                rate: r
+            });
+        }
+        const result: FindForUserResponse = {
+            user: {
+                _id: id,
+                name: "test name"
+            },
+            movies: ratedMovies
+        }
         return result;
     }
 

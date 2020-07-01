@@ -13,20 +13,11 @@ describe('movie-user', () => {
             providers: [
                 {
                     provide: getModelToken('MovieUser'),
-                    useValue: {
-                        find: () => ({
-                            exec: execMock
-                        })
-                    },
+                    useValue: {find: () => ({exec: execMock})},
                 },
                 {
                     provide: getModelToken('Movie'),
-                    useValue: {
-                        find: () => ({
-                            exec: execMock
-                        })
-
-                    }
+                    useValue: {find: () => ({exec: execMock})}
                 },
                 MovieService,
                 MovieUserService,
@@ -56,9 +47,7 @@ describe('movie-user', () => {
                 },
                 {
                     provide: getModelToken('Movie'),
-                    useValue: {
-
-                    }
+                    useValue: {}
                 },
                 MovieService,
                 MovieUserService,
@@ -85,9 +74,7 @@ describe('movie-user', () => {
                 },
                 {
                     provide: getModelToken('Movie'),
-                    useValue: {
-                        find: () => ({})
-                    }
+                    useValue: {find: () => ({})}
                 },
                 MovieService,
                 MovieUserService,
@@ -149,50 +136,11 @@ describe('movie-user', () => {
                             "_id": "5eb466360884d346a82b58e5",
                             "year": 2011
                         })
-                        // findById: (mId: string) => {
-                        //     if (mId == "5eb466360884d346a82b58e5") {
-                        //         Promise.resolve(
-                        //             {
-                        //                 "title": "kal ho na ho",
-                        //                 "brief": "aman is the angel coming to kapoor family to ligth up their miserable life, but...",
-                        //                 "genre": [
-                        //                     "comdedy",
-                        //                     "drama"
-                        //                 ],
-                        //                 "cast": [
-                        //                     "shahrukh khan",
-                        //                     "prietty zinta",
-                        //                     "saifali khan"
-                        //                 ],
-                        //                 "_id": "5eb466360884d346a82b58e5",
-                        //                 "year": 2011
-                        //             })
-                        //     } else if (mId == "5ef7255c2c64c5544cdf0f38") {
-                        //         Promise.resolve(
-                        //             {
-                        //                 "title": "Fast & Furious",
-                        //                 "brief": "",
-                        //                 "genre": [
-                        //                     "action",
-                        //                     "thriller"
-                        //                 ],
-                        //                 "cast": [
-                        //                     "Vin Diesel",
-                        //                     "Michelle Rodriguez",
-                        //                     "Jordana Brewster"
-                        //                 ],
-                        //                 "_id": "5ef7255c2c64c5544cdf0f38",
-                        //                 "year": 2001
-                        //             })
-                        //     }
-                        //}
                     },
                 },
                 {
                     provide: getModelToken('MovieUser'),
-                    useValue: {
-                        find: () => ({})
-                    }
+                    useValue: {find: () => ({})}
                 },
                 MovieService,
                 MovieUserService,

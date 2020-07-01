@@ -25,3 +25,4 @@ export const MovieUserSchema = new Schema({
         max: Constants.maxMovieRate
     }
 });
+

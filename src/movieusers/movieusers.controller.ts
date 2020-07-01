@@ -2,6 +2,7 @@ import { Controller, Get, Put, Body, Param, Delete } from '@nestjs/common';
 import { MovieUserService } from './movieusers.service';
 import { IMovieUser } from './movieusers.model';
 import { IMovie } from 'src/movies/movie.model';
+import { FindForUserResponse } from 'src/apiTypes';
 
 @Controller('movieusers')
 export class MovieUserController {
@@ -13,7 +14,7 @@ export class MovieUserController {
     }
 
     @Get(':id')
-    async getMovies(@Param('id') id: string): Promise<IMovie[]> {
+    async getMovies(@Param('id') id: string): Promise<FindForUserResponse> {
         return await this.muService.findForUser(id);
     }
 
