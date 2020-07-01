@@ -1,7 +1,6 @@
 import { Controller, Get, Put, Body, Param, Delete } from '@nestjs/common';
 import { MovieUserService } from './movieusers.service';
 import { IMovieUser } from './movieusers.model';
-import { IMovie } from 'src/movies/movie.model';
 import { FindForUserResponse } from 'src/apiTypes';
 
 @Controller('movieusers')
