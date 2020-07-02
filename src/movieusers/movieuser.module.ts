@@ -3,15 +3,17 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { MovieUserSchema } from './movieusers.model';
 import { MovieUserController } from "./movieusers.controller";
 import { MovieUserService } from "./movieusers.service";
-import { MovieSchema } from "src/movies/movie.model";
 import { UserService } from "src/users/users.service";
+import { MovieService } from "src/movies/movies.service";
+import { UserSchema } from "src/users/user.model";
+import { MovieSchema } from "src/movies/movie.model";
 
 
 @Module({
     imports: [MongooseModule.forFeature([{ name: 'MovieUser', schema: MovieUserSchema },
-    { name: 'Movie', schema: MovieSchema }])],
+    { name: 'User', schema: UserSchema }, { name: 'Movie', schema: MovieSchema }])],
     controllers: [MovieUserController],
-    providers: [MovieUserService, UserService],
+    providers: [MovieUserService, UserService, MovieService],
 })
 
 

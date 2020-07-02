@@ -34,6 +34,11 @@ export class MovieService {
         return result;
     }
 
+    async findMovies(ids: string[]): Promise<IMovie[]> {
+        const result = await this.movieModel.find({ _id : ids});
+        return result;
+    }
+
     async search(title: string, yr: number): Promise<string> {
         const result = await this.movieModel.findOne({ title: title, year: yr });
         if (result)

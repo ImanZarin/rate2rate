@@ -13,11 +13,11 @@ describe('movie-user', () => {
             providers: [
                 {
                     provide: getModelToken('MovieUser'),
-                    useValue: {find: () => ({exec: execMock})},
+                    useValue: { find: () => ({ exec: execMock }) },
                 },
                 {
                     provide: getModelToken('Movie'),
-                    useValue: {find: () => ({exec: execMock})}
+                    useValue: { find: () => ({ exec: execMock }) }
                 },
                 MovieService,
                 MovieUserService,
@@ -74,7 +74,7 @@ describe('movie-user', () => {
                 },
                 {
                     provide: getModelToken('Movie'),
-                    useValue: {find: () => ({})}
+                    useValue: { find: () => ({}) }
                 },
                 MovieService,
                 MovieUserService,
@@ -140,25 +140,15 @@ describe('movie-user', () => {
                 },
                 {
                     provide: getModelToken('MovieUser'),
-                    useValue: {find: () => ({})}
+                    useValue: { find: () => ({}) }
                 },
                 MovieService,
                 MovieUserService,
             ]
         }).compile();
         const muService = app.get(MovieUserService);
-        const movieUsersData = [{
-            "_id": "5ef731897807c812b8572853",
-            "userId": "5ed666e4cc8ec8697817e314",
-            "movieId": "5eb466360884d346a82b58e5",
-            "rate": 5
-        }, {
-            "_id": "5ef731897807c812b8572854",
-            "userId": "5ed666e4cc8ec8697817e314",
-            "movieId": "5eb466360884d346a82b58e6",
-            "rate": 3
-        }];
-        const r = await muService.findAllMovies(movieUsersData);
+        const movieUsersData = ["5eb466360884d346a82b58e5", "5eb466360884d346a82b58e6"];
+        const r = await muService.findUserMovies(movieUsersData);
         expect(r.length).toBe(2);
         expect(r[0]._id).toBe("5eb466360884d346a82b58e5");
     });
