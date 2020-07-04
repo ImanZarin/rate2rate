@@ -6,6 +6,7 @@ import { IMovie } from 'src/movies/movie.model';
 import { FindForUserResponse, MovieRate } from 'src/apiTypes';
 import { UserService } from '../users/users.service';
 import { MovieService } from 'src/movies/movies.service';
+import { IUser } from 'src/users/user.model';
 
 @Injectable()
 export class MovieUserService {
@@ -37,6 +38,7 @@ export class MovieUserService {
 
     async findForUser(id: string): Promise<FindForUserResponse> {
         const idList: IMovieUser[] = await this.movieuserModel.find({ userId: id });
+        const user: IUser = await this.userService.find(id);
         const moviesT: IMovie[] = await this.findUserMovies(idList.map(a => a.movieId.toString()));
         const ratedMovies: MovieRate[] = [];
         for (const m of moviesT) {
@@ -51,7 +53,7 @@ export class MovieUserService {
         const result: FindForUserResponse = {
             user: {
                 _id: id,
-                name: "test name"
+                name: user.username
             },
             movies: ratedMovies
         }
