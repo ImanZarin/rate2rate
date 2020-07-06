@@ -12,7 +12,6 @@ export class UserController {
     }
 
     @Put('/signup')
-    
     async create(
         @Body('username') u: string,
         @Body('email') e: string

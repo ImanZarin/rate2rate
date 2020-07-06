@@ -1,11 +1,13 @@
-import {Schema, Document} from 'mongoose';
+import { Schema, Document } from 'mongoose';
+
+import passportLocalMongoose = require('passport-local-mongoose');
 
 export interface IBody extends Document {
     _id: string;
     bodyUserId: string;
     userId: string;
     rate: number;
-  }
+}
 
 
 const BodySchema: Schema = new Schema({
@@ -30,8 +32,9 @@ export interface IUser extends Document {
     email: string;
     admin: boolean;
     bodies: [IBody];
-  }
-  
+    password: string;
+}
+
 export const UserSchema: Schema = new Schema({
     username: {
         type: String,
@@ -48,7 +51,13 @@ export const UserSchema: Schema = new Schema({
         default: false,
         required: true
     },
-    bodies: [BodySchema]
+    bodies: [BodySchema],
+    password: {
+        type: String,
+        default: "",
+    }
 });
+
+UserSchema.plugin(passportLocalMongoose);
 
 //module.exports = mongoose.model<IUser>('User', UserSchema);

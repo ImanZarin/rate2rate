@@ -33,8 +33,10 @@ export class UserService {
             return null;
     }
 
-    async find(id: string): Promise<IUser> {
+    async find(id: string): Promise<IUser | undefined> {
+        console.log("test1: ", id);
         const result = await this.userModel.findById(id);
+        console.log("test2: ", result);
         return result;
     }
 
