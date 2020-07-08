@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Put, Body, Param, Delete, Post } from '@nestjs/common';
 import { UserService } from './users.service';
 import { IUser } from './user.model';
 
@@ -11,12 +11,13 @@ export class UserController {
         return await this.userService.getAll();
     }
 
-    @Put('/signup')
+    @Post('/signup')
     async create(
         @Body('username') u: string,
-        @Body('email') e: string
+        @Body('email') e: string,
+        @Body('password') p: string
     ) {
-        const id: string = await this.userService.create(u, e);
+        const id: string = await this.userService.create(u, e, p);
         return id;
     }
 
@@ -42,4 +43,6 @@ export class UserController {
     ): Promise<IUser> {
         return await this.userService.update(id, b);
     }
+
+    
 }

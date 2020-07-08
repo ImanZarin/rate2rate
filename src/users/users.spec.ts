@@ -44,7 +44,7 @@ describe('users', () => {
             ]
         }).compile();
         const uService = app.get(UserService);
-        const r = await uService.create('testname', 'test@etest.mail');
+        const r = await uService.create('testname', 'test@etest.mail', 'testPass');
         expect(r).toBeNull;
     })
 
@@ -67,7 +67,7 @@ describe('users', () => {
             ]
         }).compile();
         const uService = app.get(UserService);
-        const r = await uService.create('testname', 'test@etest.mail');
+        const r = await uService.create('testname', 'test@etest.mail', 'testPass');
         expect(r).toBe("5eb10b521852d65394a418da");
     })
 

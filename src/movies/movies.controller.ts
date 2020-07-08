@@ -1,6 +1,7 @@
-import { Controller, Get, Put, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Put, Body, Param, Delete, UseGuards } from '@nestjs/common';
 import { MovieService } from './movies.service';
 import { IMovie } from './movie.model';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('movies')
 export class MovieController {
@@ -27,11 +28,13 @@ export class MovieController {
             return await this.movieService.create(t, y, b, i, g, c);
     }
 
+    @UseGuards(JwtAuthGuard)
     @Delete(':id')
     async delete(@Param('id') id: string): Promise<string> {
         return await this.movieService.delete(id);
     }
 
+    @UseGuards(JwtAuthGuard)
     @Put(':id')
     async update(
         @Param('id') id: string,

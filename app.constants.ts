@@ -10,6 +10,6 @@ export class Constants {
 
     static jwtConstants = {
         secret: 'secretKey',
-        expiringTime: 3600
+        expiringTime: 3600000
       };
 }

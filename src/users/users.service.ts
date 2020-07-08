@@ -2,20 +2,23 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { IUser } from './user.model';
 import { Model } from 'mongoose';
+import { AuthService } from 'src/auth/auth.service';
+import passport = require('passport');
+import { authenticate } from 'passport';
 
 @Injectable()
 export class UserService {
 
-    constructor(@InjectModel('User') private readonly userModel: Model<IUser>) {
-
-    }
+    constructor(@InjectModel('User') private readonly userModel: Model<IUser>)
+    //private readonly authService: AuthService) 
+    { }
 
     async getAll(): Promise<IUser[]> {
         const result = await this.userModel.find().exec();
         return result;
     }
 
-    async create(username: string, email: string): Promise<string> {
+    async create(username: string, email: string, pass: string): Promise<string> {
         let sameUserId = await this.searchName(username);
         if (!sameUserId)
             sameUserId = await this.searchEmail(email);
@@ -24,19 +27,25 @@ export class UserService {
                 username: username,
                 email: email,
                 admin: false,
-                bodies: []
+                bodies: [],
+                password: pass
             });
-            const result = await newUser.save();
-            return result.id as string;
+            const savedUser: IUser = await newUser.save();
+            passport.authenticate('local');
+            // const user = {
+            //     username: savedUser.username,
+            //     userId: savedUser._id
+            // };
+            //const result = await this.authService.login(user);
+            //return result.access_token;
+            return savedUser.username;
         }
         else //user exist
             return null;
     }
 
     async find(id: string): Promise<IUser | undefined> {
-        console.log("test1: ", id);
         const result = await this.userModel.findById(id);
-        console.log("test2: ", result);
         return result;
     }
 
