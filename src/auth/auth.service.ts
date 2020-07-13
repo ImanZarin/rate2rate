@@ -29,4 +29,9 @@ export class AuthService {
         };
     }
 
+    async signup(u: string, e: string, p: string){
+        const id: string = await this.userService.create(u, e, p);
+        return id;
+    }
+
 }

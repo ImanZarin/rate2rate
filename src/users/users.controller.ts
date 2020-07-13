@@ -1,6 +1,7 @@
-import { Controller, Get, Put, Body, Param, Delete, Post } from '@nestjs/common';
+import { Controller, Get, Put, Body, Param, Delete, Post, UseGuards } from '@nestjs/common';
 import { UserService } from './users.service';
 import { IUser } from './user.model';
+import { LocalAuthGuard } from 'src/auth/local-auth.guard';
 
 @Controller('users')
 export class UserController {
@@ -9,16 +10,6 @@ export class UserController {
     @Get()
     async getAll(): Promise<IUser[]> {
         return await this.userService.getAll();
-    }
-
-    @Post('/signup')
-    async create(
-        @Body('username') u: string,
-        @Body('email') e: string,
-        @Body('password') p: string
-    ) {
-        const id: string = await this.userService.create(u, e, p);
-        return id;
     }
 
     // @Put()
@@ -36,13 +27,16 @@ export class UserController {
         return await this.userService.delete(id);
     }
 
+
+    //@UseGuards(LocalAuthGuard)
     @Put(':id')
-    async update(
-        @Param('id') id: string,
-        @Body('newBody') b: string,
+    async updateCreateBody(
+        @Param('newBody') bodyId: string,
+        @Body('username') u: string,
+        @Body('rate') r: number,
     ): Promise<IUser> {
-        return await this.userService.update(id, b);
+        return await this.userService.updateCreateBody(u, bodyId, r);
     }
 
-    
+
 }

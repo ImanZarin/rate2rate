@@ -3,9 +3,9 @@ import { Schema, Document } from 'mongoose';
 import passportLocalMongoose = require('passport-local-mongoose');
 
 export interface IBody extends Document {
-    _id: string;
+    //_id: string;
     bodyUserId: string;
-    userId: string;
+    //userId: string;
     rate: number;
 }
 
@@ -15,10 +15,10 @@ const BodySchema: Schema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "User"
     },
-    userId: {
-        type: Schema.Types.ObjectId,
-        ref: "User"
-    },
+    // userId: {
+    //     type: Schema.Types.ObjectId,
+    //     ref: "User"
+    // },
     rate: {
         type: Number,
         min: 1,

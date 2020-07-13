@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { IUser } from './user.model';
+import { IUser, IBody } from './user.model';
 import { Model } from 'mongoose';
 import { AuthService } from 'src/auth/auth.service';
 import passport = require('passport');
 import { authenticate } from 'passport';
+import { throwError } from 'rxjs';
 
 @Injectable()
 export class UserService {
@@ -64,12 +65,25 @@ export class UserService {
         return result;
     }
 
-    async update(id: string, newBodyId: string)
+    async updateCreateBody(username: string, newBodyId: string, rate: number)
         : Promise<IUser> {
-
-        const updated = await this.userModel.findById(id);
-        updated.bodies.push(newBodyId);
-        updated.save();
-        return updated;
+        //user of type IUser & Document
+        const user = await this.userModel.findOne({ username: username });
+        if(user._id === newBodyId){
+            throwError(new Error("you are not able to rate yourself"));
+        }
+        const body = user.bodies.filter(x => x.bodyUserId === newBodyId)[0];
+        if (body) {
+            body.rate = rate;
+        }
+        else {
+            const newBody: IBody = {
+                rate: rate,
+                bodyUserId: newBodyId
+            };
+            user.bodies.push(newBody);
+        };
+        user.save();
+        return user;
     }
 }
