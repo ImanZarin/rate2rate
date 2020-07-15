@@ -10,6 +10,6 @@ export class Constants {
 
     static jwtConstants = {
         secret: 'secretKey',
-        expiringTime: 3600000
+        expiringTime: 2592000000//time is a month in miliseconds
       };
 }

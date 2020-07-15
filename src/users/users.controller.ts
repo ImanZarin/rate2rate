@@ -1,7 +1,6 @@
-import { Controller, Get, Put, Body, Param, Delete, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, Put, Body, Param, Delete } from '@nestjs/common';
 import { UserService } from './users.service';
 import { IUser } from './user.model';
-import { LocalAuthGuard } from 'src/auth/local-auth.guard';
 
 @Controller('users')
 export class UserController {
@@ -28,7 +27,6 @@ export class UserController {
     }
 
 
-    //@UseGuards(LocalAuthGuard)
     @Put(':id')
     async updateCreateBody(
         @Param('newBody') bodyId: string,

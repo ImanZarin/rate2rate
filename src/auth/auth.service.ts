@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { UserService } from "src/users/users.service";
 import { JwtService } from '@nestjs/jwt';
+import { IUser } from "src/users/user.model";
 
 
 @Injectable()
@@ -22,10 +23,11 @@ export class AuthService {
 
     async login(user: any) {
         const payload = { username: user._doc.username, sub: user._doc.email };
+        const mUser: IUser = await this.userService.searchName(user._doc.username);
         return {
             // eslint-disable-next-line @typescript-eslint/camelcase
             accessToken: this.jwtService.sign(payload),
-            userName: user._doc.username
+            user: JSON.stringify(mUser)
         };
     }
 

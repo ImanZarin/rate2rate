@@ -1,7 +1,8 @@
-import { Controller, Get, Put, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Put, Body, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { MovieUserService } from './movieusers.service';
 import { IMovieUser } from './movieusers.model';
-import { FindForUserResponse } from 'src/apiTypes';
+import { GetUserInfoResponse, GetUserInfoForSignedResponse } from 'src/apiTypes';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('movieusers')
 export class MovieUserController {
@@ -9,12 +10,23 @@ export class MovieUserController {
 
     @Get()
     async getAll(): Promise<IMovieUser[]> {
+        console.log("finally got to get all");
+        return null;
         return await this.muService.getAll();
     }
 
     @Get(':id')
-    async getMovies(@Param('id') id: string): Promise<FindForUserResponse> {
+    async getInfo(@Param('id') id: string): Promise<GetUserInfoResponse> {
         return await this.muService.findForUser(id);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get(':id')
+    async getExtraInfo(
+        @Param(":id") id: string,
+        @Request() req): Promise<GetUserInfoForSignedResponse> {
+        console.log("finally got here 2");
+        return await this.muService.findForUserExtra(id, req.user._doc.username);
     }
 
     @Put()

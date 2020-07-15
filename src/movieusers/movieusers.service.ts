@@ -3,10 +3,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { IMovieUser } from './movieusers.model';
 import { Model, Document } from 'mongoose';
 import { IMovie } from 'src/movies/movie.model';
-import { FindForUserResponse, MovieRate } from 'src/apiTypes';
+import { GetUserInfoResponse, MovieRate, GetUserInfoForSignedResponse } from 'src/apiTypes';
 import { UserService } from '../users/users.service';
 import { MovieService } from 'src/movies/movies.service';
-import { IUser } from 'src/users/user.model';
+import { IUser, IBody } from 'src/users/user.model';
 
 @Injectable()
 export class MovieUserService {
@@ -36,7 +36,7 @@ export class MovieUserService {
         return result;
     }
 
-    async findForUser(id: string): Promise<FindForUserResponse> {
+    async findForUser(id: string): Promise<GetUserInfoResponse> {
         const idList: IMovieUser[] = await this.movieuserModel.find({ userId: id });
         const user: IUser = await this.userService.find(id);
         const moviesT: IMovie[] = await this.findUserMovies(idList.map(a => a.movieId.toString()));
@@ -50,14 +50,24 @@ export class MovieUserService {
                 rate: r
             });
         }
-        const result: FindForUserResponse = {
-            user: {
-                _id: id,
-                name: user.username
-            },
+        const result: GetUserInfoResponse = {
+            user: user,
             movies: ratedMovies
         }
         return result;
+    }
+
+    async findForUserExtra(id: string, signedName: string): Promise<GetUserInfoForSignedResponse> {
+        const re1: GetUserInfoResponse = await this.findForUser(id);
+        const signedUser: IUser = await this.userService.searchName(signedName);
+        const _body: IBody = signedUser.bodies.filter(x => x.bodyUserId === id)[0];
+        let _rate = 0;
+        if(_body)
+            _rate = _body.rate;
+        return {
+            userAndMovies: re1,
+            rate: _rate
+        }
     }
 
     async findUserMovies(idList: string[]): Promise<IMovie[]> {
