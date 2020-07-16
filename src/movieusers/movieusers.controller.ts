@@ -3,6 +3,7 @@ import { MovieUserService } from './movieusers.service';
 import { IMovieUser } from './movieusers.model';
 import { GetUserInfoResponse, GetUserInfoForSignedResponse } from 'src/apiTypes';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { JwtAuthOptionalGuard } from '../auth/jwt-auth-optional.guard';
 
 @Controller('movieusers')
 export class MovieUserController {
@@ -20,7 +21,7 @@ export class MovieUserController {
         return await this.muService.findForUser(id);
     }
 
-    @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthOptionalGuard)
     @Get(':id')
     async getExtraInfo(
         @Param(":id") id: string,
