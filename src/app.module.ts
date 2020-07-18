@@ -11,7 +11,7 @@ import { UserService } from './users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { AuthModule } from './auth/auth.module';
 
-const config = require('../config');
+const config = require('./config');
 
 const url = config.mongoUrl;
 

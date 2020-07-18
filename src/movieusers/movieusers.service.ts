@@ -60,9 +60,9 @@ export class MovieUserService {
     async findForUserExtra(id: string, signedName: string): Promise<GetUserInfoForSignedResponse> {
         const re1: GetUserInfoResponse = await this.findForUser(id);
         const signedUser: IUser = await this.userService.searchName(signedName);
-        const _body: IBody = signedUser.bodies.filter(x => x.bodyUserId === id)[0];
+        const _body: IBody = signedUser.bodies.filter(x => x.bodyUserId == id)[0];
         let _rate = 0;
-        if(_body)
+        if (_body)
             _rate = _body.rate;
         return {
             userAndMovies: re1,
@@ -82,6 +82,11 @@ export class MovieUserService {
 
     async delete(id: string) {
         const result = await this.movieuserModel.deleteOne({ _id: id });
+        return result;
+    }
+
+    async deleteAll() {
+        const result = await this.movieuserModel.deleteMany({});
         return result;
     }
 

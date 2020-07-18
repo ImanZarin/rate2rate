@@ -2,17 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { IUser, IBody } from './user.model';
 import { Model } from 'mongoose';
-import { AuthService } from 'src/auth/auth.service';
 import passport = require('passport');
-import { authenticate } from 'passport';
-import { throwError } from 'rxjs';
+import { use } from 'passport';
 
 @Injectable()
 export class UserService {
 
-    constructor(@InjectModel('User') private readonly userModel: Model<IUser>)
-    //private readonly authService: AuthService) 
-    { }
+    constructor(@InjectModel('User') private readonly userModel: Model<IUser>) { }
 
     async getAll(): Promise<IUser[]> {
         const result = await this.userModel.find().exec();
@@ -68,13 +64,20 @@ export class UserService {
     async updateCreateBody(username: string, newBodyId: string, rate: number)
         : Promise<IUser> {
         //user of type IUser & Document
-        const user = await this.userModel.findOne({ username: username });
-        if(user._id === newBodyId){
-            throwError(new Error("you are not able to rate yourself"));
+        const user: IUser = await this.userModel.findOne({ username: username });
+        console.log("pre user: ", user);
+        if (user == null) {
+            console.log("this user does not exist");
+            return null;
+        }
+        if (user._id == newBodyId) {
+            console.log("you are not able to rate yourself");
+            return null;
         }
         const body = user.bodies.filter(x => x.bodyUserId === newBodyId)[0];
+        const index = user.bodies.indexOf(body);
         if (body) {
-            body.rate = rate;
+            user.bodies[index].rate = rate;
         }
         else {
             const newBody: IBody = {
@@ -83,7 +86,18 @@ export class UserService {
             };
             user.bodies.push(newBody);
         };
-        user.save();
+        (user as any).save();
+        const user2: IUser = await this.userModel.findOne({ username: username });
+        console.log("next user2: ", user2);
+        return user;
+    }
+
+    async deleteBodies(id: string): Promise<IUser> {
+        const user = await this.userModel.findById(id);
+        if (user) {
+            user.bodies = [];
+            user.save();
+        }
         return user;
     }
 }

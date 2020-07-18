@@ -2,7 +2,6 @@ import { Controller, Get, Put, Body, Param, Delete, UseGuards, Request } from '@
 import { MovieUserService } from './movieusers.service';
 import { IMovieUser } from './movieusers.model';
 import { GetUserInfoResponse, GetUserInfoForSignedResponse } from 'src/apiTypes';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { JwtAuthOptionalGuard } from '../auth/jwt-auth-optional.guard';
 
 @Controller('movieusers')
@@ -11,23 +10,20 @@ export class MovieUserController {
 
     @Get()
     async getAll(): Promise<IMovieUser[]> {
-        console.log("finally got to get all");
-        return null;
         return await this.muService.getAll();
-    }
-
-    @Get(':id')
-    async getInfo(@Param('id') id: string): Promise<GetUserInfoResponse> {
-        return await this.muService.findForUser(id);
     }
 
     @UseGuards(JwtAuthOptionalGuard)
     @Get(':id')
-    async getExtraInfo(
-        @Param(":id") id: string,
-        @Request() req): Promise<GetUserInfoForSignedResponse> {
-        console.log("finally got here 2");
-        return await this.muService.findForUserExtra(id, req.user._doc.username);
+    async getInfo(
+        @Param('id') id: string,
+        @Request() req): Promise<GetUserInfoForSignedResponse | GetUserInfoResponse> {
+        if (req.user.username) {
+            //TODO if id === user._id redirect to profile page
+            return await this.muService.findForUserExtra(id, req.user.username);
+        } else {
+            return await this.muService.findForUser(id);
+        }
     }
 
     @Put()
@@ -48,6 +44,11 @@ export class MovieUserController {
     @Delete(':id')
     async delete(@Param('id') id: string): Promise<string> {
         return await this.muService.delete(id);
+    }
+
+    @Delete()
+    async deleteAll(): Promise<IMovieUser[]> {
+        return await this.muService.deleteAll();
     }
 
     @Put(':id')

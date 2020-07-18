@@ -2,29 +2,27 @@ import { Schema, Document } from 'mongoose';
 
 import passportLocalMongoose = require('passport-local-mongoose');
 
-export interface IBody extends Document {
-    //_id: string;
+export interface IBody {
     bodyUserId: string;
-    //userId: string;
     rate: number;
 }
 
 
-const BodySchema: Schema = new Schema({
-    bodyUserId: {
-        type: Schema.Types.ObjectId,
-        ref: "User"
-    },
-    // userId: {
-    //     type: Schema.Types.ObjectId,
-    //     ref: "User"
-    // },
-    rate: {
-        type: Number,
-        min: 1,
-        max: 5
-    }
-});
+// const BodySchema: Schema = new Schema({
+//     bodyUserId: {
+//         type: Schema.Types.ObjectId,
+//         ref: "User"
+//     },
+//     // userId: {
+//     //     type: Schema.Types.ObjectId,
+//     //     ref: "User"
+//     // },
+//     rate: {
+//         type: Number,
+//         min: 1,
+//         max: 5
+//     }
+// });
 
 export interface IUser extends Document {
     _id: string,
@@ -51,7 +49,9 @@ export const UserSchema: Schema = new Schema({
         default: false,
         required: true
     },
-    bodies: [BodySchema],
+    bodies: {
+        type: [],
+    },
     password: {
         type: String,
         default: "",
