@@ -76,7 +76,7 @@ export class MovieUserService {
     }
 
     async search(userId: string, movieId: string): Promise<string> {
-        const result = await this.movieuserModel.find({ movieId: movieId, userId: userId });
+        const result = await this.movieuserModel.find({ movieId: movieId, userId: userId })[0];
         return result._id;
     }
 
@@ -92,7 +92,7 @@ export class MovieUserService {
 
     async update(id: string, rate: number)
         : Promise<IMovieUser> {
-        const updated: Document = await this.movieuserModel.findById(id);
+        const updated: IMovieUser = await this.movieuserModel.findById(id);
         if (rate)
             updated.rate = rate;
         updated.save();

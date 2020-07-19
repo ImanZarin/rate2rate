@@ -30,7 +30,7 @@ export class MovieController {
 
     @UseGuards(JwtAuthGuard)
     @Delete(':id')
-    async delete(@Param('id') id: string): Promise<string> {
+    async delete(@Param('id') id: string): Promise<{ok?: number;n?: number;} & {deletedCount?: number;}> {
         return await this.movieService.delete(id);
     }
 

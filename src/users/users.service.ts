@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { IUser, IBody } from './user.model';
 import { Model } from 'mongoose';
 import passport = require('passport');
-import { use } from 'passport';
 
 @Injectable()
 export class UserService {
@@ -15,13 +14,15 @@ export class UserService {
         return result;
     }
 
-    async create(username: string, email: string, pass: string): Promise<string> {
-        let sameUserId = await this.searchName(username);
-        if (!sameUserId)
-            sameUserId = await this.searchEmail(email);
+    async create(email: string, pass: string, username: string): Promise<IUser> {
+        const sameUserId = await this.searchEmail(email);
+        let _username = username;
+        if (username.length == 0) {
+            _username = email;
+        }
         if (!sameUserId) {
             const newUser = new this.userModel({
-                username: username,
+                username: _username,
                 email: email,
                 admin: false,
                 bodies: [],
@@ -29,16 +30,14 @@ export class UserService {
             });
             const savedUser: IUser = await newUser.save();
             passport.authenticate('local');
-            // const user = {
-            //     username: savedUser.username,
-            //     userId: savedUser._id
-            // };
-            //const result = await this.authService.login(user);
-            //return result.access_token;
-            return savedUser.username;
+            return savedUser;
         }
-        else //user exist
+        else //user email exist
+        {
+            console.log("email has already been used");
+            //TODO Error for used email
             return null;
+        }
     }
 
     async find(id: string): Promise<IUser | undefined> {
@@ -61,34 +60,30 @@ export class UserService {
         return result;
     }
 
-    async updateCreateBody(username: string, newBodyId: string, rate: number)
-        : Promise<IUser> {
-        //user of type IUser & Document
-        const user: IUser = await this.userModel.findOne({ username: username });
-        console.log("pre user: ", user);
+    async updateCreateBody(userId: string, newBodyId: string, rate: number): Promise<IUser> {
+        const user = await this.userModel.findById(userId);
         if (user == null) {
             console.log("this user does not exist");
             return null;
         }
-        if (user._id == newBodyId) {
+        if ((user as IUser)._id == newBodyId) {
             console.log("you are not able to rate yourself");
             return null;
         }
-        const body = user.bodies.filter(x => x.bodyUserId === newBodyId)[0];
-        const index = user.bodies.indexOf(body);
+        const body = (user as IUser).bodies.filter(x => x.bodyUserId === newBodyId)[0];
+        const index = (user as IUser).bodies.indexOf(body);
         if (body) {
-            user.bodies[index].rate = rate;
+            (user as IUser).bodies[index].rate = rate;
         }
         else {
             const newBody: IBody = {
                 rate: rate,
                 bodyUserId: newBodyId
             };
-            user.bodies.push(newBody);
+            (user as IUser).bodies.push(newBody);
         };
-        (user as any).save();
-        const user2: IUser = await this.userModel.findOne({ username: username });
-        console.log("next user2: ", user2);
+        user.markModified("bodies");
+        user.save();
         return user;
     }
 

@@ -29,7 +29,7 @@ export interface IUser extends Document {
     username: string;
     email: string;
     admin: boolean;
-    bodies: [IBody];
+    bodies: IBody[];
     password: string;
 }
 
@@ -37,7 +37,7 @@ export const UserSchema: Schema = new Schema({
     username: {
         type: String,
         default: "",
-        required: true
+        required: false
     },
     email: {
         type: String,
@@ -50,11 +50,14 @@ export const UserSchema: Schema = new Schema({
         required: true
     },
     bodies: {
-        type: [],
+        type: Array,
+        default: [],
+        required: false
     },
     password: {
         type: String,
         default: "",
+        required: true
     }
 });
 

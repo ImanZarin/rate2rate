@@ -42,12 +42,12 @@ export class MovieUserController {
     }
 
     @Delete(':id')
-    async delete(@Param('id') id: string): Promise<string> {
+    async delete(@Param('id') id: string): Promise<{ ok?: number; n?: number; } & { deletedCount?: number; }> {
         return await this.muService.delete(id);
     }
 
     @Delete()
-    async deleteAll(): Promise<IMovieUser[]> {
+    async deleteAll(): Promise<{ ok?: number; n?: number; } & { deletedCount?: number; }> {
         return await this.muService.deleteAll();
     }
 

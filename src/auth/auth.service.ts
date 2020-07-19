@@ -8,11 +8,13 @@ import { IUser } from "src/users/user.model";
 export class AuthService {
 
     constructor(
-        private userService: UserService, 
+        private userService: UserService,
         private jwtService: JwtService) { }
 
-    async validateUser(username: string, pass: string): Promise<any> {
-        const user = await this.userService.searchName(username);
+    async validateUser(email: string, pass: string): Promise<any> {
+        console.log("email is: ", email, " and password is: ", pass);
+        const user = await this.userService.searchEmail(email);
+        console.log("user is: ", user);
         if (user && (user.password === pass || user.password.length == 0)) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { password, ...result } = user;
@@ -22,8 +24,8 @@ export class AuthService {
     }
 
     async login(user: any) {
-        const payload = { username: user._doc.username, sub: user._doc.email };
-        const mUser: IUser = await this.userService.searchName(user._doc.username);
+        const payload = { username: user._doc.email, sub: user._doc._id };
+        const mUser: IUser = await this.userService.find(user._doc._id);
         return {
             // eslint-disable-next-line @typescript-eslint/camelcase
             accessToken: this.jwtService.sign(payload),
@@ -31,8 +33,8 @@ export class AuthService {
         };
     }
 
-    async signup(u: string, e: string, p: string){
-        const id: string = await this.userService.create(u, e, p);
+    async signup(e: string, p: string, u: string): Promise<IUser> {
+        const id: IUser = await this.userService.create(e, p, u);
         return id;
     }
 

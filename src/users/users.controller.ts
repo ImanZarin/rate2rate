@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Body, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Put, Body, Param, Delete, UseGuards, Request, Post } from '@nestjs/common';
 import { UserService } from './users.service';
 import { IUser } from './user.model';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -23,7 +23,7 @@ export class UserController {
     // }
 
     @Delete(':id')
-    async delete(@Param('id') id: string): Promise<string> {
+    async delete(@Param('id') id: string): Promise<{ ok?: number; n?: number; } & { deletedCount?: number; }> {
         return await this.userService.delete(id);
     }
 
@@ -40,7 +40,7 @@ export class UserController {
         @Param('id') bodyId: string,
         @Body('rate') r: number,
     ): Promise<IUser> {
-        return await this.userService.updateCreateBody(req.user.username, bodyId, r);
+        return await this.userService.updateCreateBody(req.user.sub, bodyId, r);
     }
 
 
