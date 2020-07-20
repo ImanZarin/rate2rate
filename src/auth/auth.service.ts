@@ -1,7 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
 import { UserService } from "src/users/users.service";
 import { JwtService } from '@nestjs/jwt';
 import { IUser } from "src/users/user.model";
+import { LoginUserResponse } from "src/apiTypes";
 
 
 @Injectable()
@@ -24,18 +25,25 @@ export class AuthService {
     }
 
     async login(user: any) {
-        const payload = { username: user._doc.email, sub: user._doc._id };
-        const mUser: IUser = await this.userService.find(user._doc._id);
+        return await this.getJwtToken(user._doc.email, user._doc._id);
+    }
+
+    private async getJwtToken(email: string, id: string): Promise<LoginUserResponse> {
+        const payload = { username: email, sub: id };
+        const mUser: IUser = await this.userService.find(id);
         return {
             // eslint-disable-next-line @typescript-eslint/camelcase
             accessToken: this.jwtService.sign(payload),
-            user: JSON.stringify(mUser)
+            user: mUser
         };
     }
 
-    async signup(e: string, p: string, u: string): Promise<IUser> {
-        const id: IUser = await this.userService.create(e, p, u);
-        return id;
+    async signup(e: string, p: string, u: string): Promise<LoginUserResponse> {
+        const user: IUser = await this.userService.create(e, p, u);
+        if (user)
+            return await this.getJwtToken(user.email, user._id);
+        else
+            throw new HttpException("this email has already been used, try another or login through the link", HttpStatus.FORBIDDEN);
     }
 
 }

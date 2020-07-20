@@ -10,6 +10,11 @@ export interface GetUserInfoForSignedResponse {
     rate: number
 }
 
+export interface LoginUserResponse {
+    accessToken: string,
+    user: IUser
+}
+
 export interface MovieRate {
     _id: string;
     title: string;
