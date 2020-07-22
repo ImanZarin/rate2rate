@@ -2,7 +2,6 @@ import { Controller, UseGuards, Post, Request, Body, Next } from "@nestjs/common
 import { AuthService } from "./auth.service";
 import { LocalAuthGuard } from "./local-auth.guard";
 import { LoginUserResponse } from "src/apiTypes";
-import { nextTick } from "process";
 
 
 
@@ -18,9 +17,9 @@ export class AuthController {
 
     @Post('signup')
     async create(
-        @Body('email') e: string,
+        @Body('username') e: string,
         @Body('password') p: string,
-        @Body('username') u: string,
+        @Body('usertag') u: string,
     ): Promise<LoginUserResponse> {
         return this.authService.signup(e, p, u);
     }

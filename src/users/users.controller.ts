@@ -40,7 +40,7 @@ export class UserController {
         @Param('id') bodyId: string,
         @Body('rate') r: number,
     ): Promise<IUser> {
-        return await this.userService.updateCreateBody(req.user.sub, bodyId, r);
+        return await this.userService.updateCreateBody(req.user.userId, bodyId, r);
     }
 
 

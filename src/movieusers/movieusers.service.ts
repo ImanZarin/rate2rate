@@ -7,6 +7,7 @@ import { GetUserInfoResponse, MovieRate, GetUserInfoForSignedResponse } from 'sr
 import { UserService } from '../users/users.service';
 import { MovieService } from 'src/movies/movies.service';
 import { IUser, IBody } from 'src/users/user.model';
+import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult } from 'src/shared/result.enums';
 
 @Injectable()
 export class MovieUserService {
@@ -39,6 +40,20 @@ export class MovieUserService {
     async findForUser(id: string): Promise<GetUserInfoResponse> {
         const idList: IMovieUser[] = await this.movieuserModel.find({ userId: id });
         const user: IUser = await this.userService.find(id);
+        if (!user) {
+            return {
+                result: GetUserInfoResponseResult.userNotFound,
+                user: null,
+                movies: []
+            }
+        }
+        if (idList.length < 1) {
+            return {
+                result: GetUserInfoResponseResult.listEmpty,
+                user: user,
+                movies: []
+            }
+        }
         const moviesT: IMovie[] = await this.findUserMovies(idList.map(a => a.movieId.toString()));
         const ratedMovies: MovieRate[] = [];
         for (const m of moviesT) {
@@ -50,22 +65,47 @@ export class MovieUserService {
                 rate: r
             });
         }
-        const result: GetUserInfoResponse = {
+        if (ratedMovies.length < 1) {
+            return {
+                result: GetUserInfoResponseResult.listEmpty,
+                user: user,
+                movies: []
+            }
+        }
+        return {
+            result: GetUserInfoResponseResult.success,
             user: user,
             movies: ratedMovies
         }
-        return result;
     }
 
     async findForUserExtra(id: string, signedName: string): Promise<GetUserInfoForSignedResponse> {
         const re1: GetUserInfoResponse = await this.findForUser(id);
-        const signedUser: IUser = await this.userService.searchName(signedName);
-        const _body: IBody = signedUser.bodies.filter(x => x.bodyUserId == id)[0];
         let _rate = 0;
+        if (re1.result == GetUserInfoResponseResult.userNotFound) {
+            return {
+                result: GetUserInfoForSignedResponseResult.userNotFound,
+                user: null,
+                movies: [],
+                rate: _rate
+            }
+        }
+        const signedUser: IUser = await this.userService.searchEmail(signedName);
+        const _body: IBody = signedUser.bodies.filter(x => x.bodyUserId == id)[0];
         if (_body)
             _rate = _body.rate;
+        if (re1.result == GetUserInfoResponseResult.listEmpty) {
+            return {
+                result: GetUserInfoForSignedResponseResult.listEmpty,
+                user: re1.user,
+                movies: [],
+                rate: _rate
+            }
+        }
         return {
-            userAndMovies: re1,
+            result: GetUserInfoForSignedResponseResult.success,
+            user: re1.user,
+            movies: re1.movies,
             rate: _rate
         }
     }
