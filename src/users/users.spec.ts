@@ -90,7 +90,7 @@ describe('users', () => {
             ]
         }).compile();
         const uService = app.get(UserService);
-        const r = await uService.find("5eb10b521852d65394a418da");
+        const r = await uService.find(["5eb10b521852d65394a418da"])[0];
         expect(r._id).toBe("5eb10b521852d65394a418da");
     })
 
@@ -180,8 +180,8 @@ describe('users', () => {
         }).compile();
         const mService = app.get(UserService);
         const r = await mService.updateCreateBody("5eb10b521852d65394a418da", "003", 3);
-        expect(r.username).toBe("srk");
-        expect(r.bodies).toEqual([{ bodyUserId: "001", rate: 1 }, { bodyUserId: "002", rate: 2 }, { bodyUserId: "003", rate: 3 }]);
-        expect(r.bodies.length).toBe(3);
+        expect(r.user.username).toBe("srk");
+        expect(r.user.bodies).toEqual([{ bodyUserId: "001", rate: 1 }, { bodyUserId: "002", rate: 2 }, { bodyUserId: "003", rate: 3 }]);
+        expect(r.user.bodies.length).toBe(3);
     })
 })

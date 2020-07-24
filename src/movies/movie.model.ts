@@ -10,6 +10,7 @@ export interface IMovie extends Document {
     imageUrl: string;
     genre: string[];
     cast: string[];
+    director: string[];
 }
 
 export const MovieSchema = new mongoose.Schema({

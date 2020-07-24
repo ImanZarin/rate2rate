@@ -29,7 +29,7 @@ export class AuthService {
 
     private async getJwtToken(email: string, id: string): Promise<LoginUserResponse> {
         const payload = { username: email, sub: id };
-        const mUser: IUser = await this.userService.find(id);
+        const mUser: IUser = (await this.userService.find([id]))[0];
         if (mUser) {
             return {
                 result: LoginUserResponseResult.success,

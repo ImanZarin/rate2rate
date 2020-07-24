@@ -1,7 +1,7 @@
 import { Controller, Get, Put, Body, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { MovieUserService } from './movieusers.service';
 import { IMovieUser } from './movieusers.model';
-import { GetUserInfoResponse, GetUserInfoForSignedResponse } from 'src/apiTypes';
+import { GetUserInfoResponse, GetUserInfoForSignedResponse, GetMovieInfoResponse, GetMovieInfoForSignedResponse } from 'src/apiTypes';
 import { JwtAuthOptionalGuard } from '../auth/jwt-auth-optional.guard';
 
 @Controller('movieusers')
@@ -14,8 +14,8 @@ export class MovieUserController {
     }
 
     @UseGuards(JwtAuthOptionalGuard)
-    @Get(':id')
-    async getInfo(
+    @Get('user/:id')
+    async getUserInfo(
         @Param('id') id: string,
         @Request() req): Promise<GetUserInfoForSignedResponse | GetUserInfoResponse> {
         if (req.user.username) {
@@ -23,6 +23,18 @@ export class MovieUserController {
             return await this.muService.findForUserExtra(id, req.user.username);
         } else {
             return await this.muService.findForUser(id);
+        }
+    }
+
+    @UseGuards(JwtAuthOptionalGuard)
+    @Get('movie/:id')
+    async getMovieInfo(
+        @Param('id') id: string,
+        @Request() req): Promise<GetMovieInfoForSignedResponse | GetMovieInfoResponse> {
+        if (req.user.username) {
+            return await this.muService.findForMovieExtra(id, req.user.username);
+        } else {
+            return await this.muService.findForMovie(id);
         }
     }
 

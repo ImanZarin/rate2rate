@@ -3,11 +3,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { IMovieUser } from './movieusers.model';
 import { Model, Document } from 'mongoose';
 import { IMovie } from 'src/movies/movie.model';
-import { GetUserInfoResponse, MovieRate, GetUserInfoForSignedResponse } from 'src/apiTypes';
+import { GetUserInfoResponse, MovieRate, GetUserInfoForSignedResponse, GetMovieInfoResponse, UserRate, GetMovieInfoForSignedResponse } from 'src/apiTypes';
 import { UserService } from '../users/users.service';
 import { MovieService } from 'src/movies/movies.service';
 import { IUser, IBody } from 'src/users/user.model';
-import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult } from 'src/shared/result.enums';
+import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult } from 'src/shared/result.enums';
 
 @Injectable()
 export class MovieUserService {
@@ -39,7 +39,7 @@ export class MovieUserService {
 
     async findForUser(id: string): Promise<GetUserInfoResponse> {
         const idList: IMovieUser[] = await this.movieuserModel.find({ userId: id });
-        const user: IUser = await this.userService.find(id);
+        const user: IUser = (await this.userService.find([id]))[0];
         if (!user) {
             return {
                 result: GetUserInfoResponseResult.userNotFound,
@@ -106,6 +106,80 @@ export class MovieUserService {
             result: GetUserInfoForSignedResponseResult.success,
             user: re1.user,
             movies: re1.movies,
+            rate: _rate
+        }
+    }
+
+    async findForMovie(id: string): Promise<GetMovieInfoResponse> {
+        const idList: IMovieUser[] = await this.movieuserModel.find({ movieId: id });
+        const movie: IMovie = await this.movieService.find(id);
+        if (!movie) {
+            return {
+                result: GetMovieInfoResponseResult.movieNotFound,
+                movie: null,
+                users: []
+            }
+        }
+        if (idList.length < 1) {
+            return {
+                result: GetMovieInfoResponseResult.listEmpty,
+                movie: movie,
+                users: []
+            }
+        }
+        const usersT: IUser[] = await this.userService.find(idList.map(a => a.userId.toString()));
+        const userRated: UserRate[] = [];
+        for (const u of usersT) {
+            const r = idList.find(mu => mu.userId.toString() == u._id.toString()).rate;
+            userRated.push({
+                _id: u._id,
+                name: u.username,
+                rate: r
+            });
+        }
+        if (userRated.length < 1) {
+            return {
+                result: GetMovieInfoResponseResult.listEmpty,
+                movie: movie,
+                users: []
+            }
+        }
+        return {
+            result: GetMovieInfoResponseResult.success,
+            movie: movie,
+            users: userRated
+        }
+    }
+
+    async findForMovieExtra(id: string, signedName: string): Promise<GetMovieInfoForSignedResponse> {
+        const re1: GetMovieInfoResponse = await this.findForMovie(id);
+        let _rate = 0;
+        if (re1.result == GetMovieInfoResponseResult.movieNotFound) {
+            return {
+                result: GetMovieInfoForSignedResponseResult.movieNotFound,
+                movie: null,
+                users: [],
+                rate: _rate
+            }
+        }
+        const signedUser = await this.userService.searchEmail(signedName);
+        const signedUserRate: IMovieUser = await this.movieuserModel.find({ userId: signedUser._id, movieId: id })[0];
+        if (signedName && signedUserRate) {
+            _rate = signedUserRate.rate;
+            re1.users.filter(u => u._id != signedUser._id);
+        }
+        if (re1.result == GetMovieInfoResponseResult.listEmpty) {
+            return {
+                result: GetMovieInfoForSignedResponseResult.listEmpty,
+                movie: re1.movie,
+                users: [],
+                rate: _rate
+            }
+        }
+        return {
+            result: GetMovieInfoForSignedResponseResult.success,
+            movie: re1.movie,
+            users: re1.users,
             rate: _rate
         }
     }
