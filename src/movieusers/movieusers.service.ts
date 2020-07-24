@@ -3,10 +3,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { IMovieUser } from './movieusers.model';
 import { Model, Document } from 'mongoose';
 import { IMovie } from 'src/movies/movie.model';
-import { FindForUserResponse, MovieRate } from 'src/apiTypes';
+import { GetUserInfoResponse, MovieRate, GetUserInfoForSignedResponse } from 'src/apiTypes';
 import { UserService } from '../users/users.service';
 import { MovieService } from 'src/movies/movies.service';
-import { IUser } from 'src/users/user.model';
+import { IUser, IBody } from 'src/users/user.model';
+import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult } from 'src/shared/result.enums';
 
 @Injectable()
 export class MovieUserService {
@@ -36,9 +37,23 @@ export class MovieUserService {
         return result;
     }
 
-    async findForUser(id: string): Promise<FindForUserResponse> {
+    async findForUser(id: string): Promise<GetUserInfoResponse> {
         const idList: IMovieUser[] = await this.movieuserModel.find({ userId: id });
         const user: IUser = await this.userService.find(id);
+        if (!user) {
+            return {
+                result: GetUserInfoResponseResult.userNotFound,
+                user: null,
+                movies: []
+            }
+        }
+        if (idList.length < 1) {
+            return {
+                result: GetUserInfoResponseResult.listEmpty,
+                user: user,
+                movies: []
+            }
+        }
         const moviesT: IMovie[] = await this.findUserMovies(idList.map(a => a.movieId.toString()));
         const ratedMovies: MovieRate[] = [];
         for (const m of moviesT) {
@@ -50,14 +65,49 @@ export class MovieUserService {
                 rate: r
             });
         }
-        const result: FindForUserResponse = {
-            user: {
-                _id: id,
-                name: user.username
-            },
+        if (ratedMovies.length < 1) {
+            return {
+                result: GetUserInfoResponseResult.listEmpty,
+                user: user,
+                movies: []
+            }
+        }
+        return {
+            result: GetUserInfoResponseResult.success,
+            user: user,
             movies: ratedMovies
         }
-        return result;
+    }
+
+    async findForUserExtra(id: string, signedName: string): Promise<GetUserInfoForSignedResponse> {
+        const re1: GetUserInfoResponse = await this.findForUser(id);
+        let _rate = 0;
+        if (re1.result == GetUserInfoResponseResult.userNotFound) {
+            return {
+                result: GetUserInfoForSignedResponseResult.userNotFound,
+                user: null,
+                movies: [],
+                rate: _rate
+            }
+        }
+        const signedUser: IUser = await this.userService.searchEmail(signedName);
+        const _body: IBody = signedUser.bodies.filter(x => x.bodyUserId == id)[0];
+        if (_body)
+            _rate = _body.rate;
+        if (re1.result == GetUserInfoResponseResult.listEmpty) {
+            return {
+                result: GetUserInfoForSignedResponseResult.listEmpty,
+                user: re1.user,
+                movies: [],
+                rate: _rate
+            }
+        }
+        return {
+            result: GetUserInfoForSignedResponseResult.success,
+            user: re1.user,
+            movies: re1.movies,
+            rate: _rate
+        }
     }
 
     async findUserMovies(idList: string[]): Promise<IMovie[]> {
@@ -66,7 +116,7 @@ export class MovieUserService {
     }
 
     async search(userId: string, movieId: string): Promise<string> {
-        const result = await this.movieuserModel.find({ movieId: movieId, userId: userId });
+        const result = await this.movieuserModel.find({ movieId: movieId, userId: userId })[0];
         return result._id;
     }
 
@@ -75,9 +125,14 @@ export class MovieUserService {
         return result;
     }
 
+    async deleteAll() {
+        const result = await this.movieuserModel.deleteMany({});
+        return result;
+    }
+
     async update(id: string, rate: number)
         : Promise<IMovieUser> {
-        const updated: Document = await this.movieuserModel.findById(id);
+        const updated: IMovieUser = await this.movieuserModel.findById(id);
         if (rate)
             updated.rate = rate;
         updated.save();

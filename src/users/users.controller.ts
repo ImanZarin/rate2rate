@@ -1,6 +1,8 @@
-import { Controller, Get, Put, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Put, Body, Param, Delete, UseGuards, Request, Post } from '@nestjs/common';
 import { UserService } from './users.service';
 import { IUser } from './user.model';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { UpdateBodyResponse } from 'src/apiTypes';
 
 @Controller('users')
 export class UserController {
@@ -9,16 +11,6 @@ export class UserController {
     @Get()
     async getAll(): Promise<IUser[]> {
         return await this.userService.getAll();
-    }
-
-    @Put('/signup')
-    
-    async create(
-        @Body('username') u: string,
-        @Body('email') e: string
-    ) {
-        const id: string = await this.userService.create(u, e);
-        return id;
     }
 
     // @Put()
@@ -32,15 +24,25 @@ export class UserController {
     // }
 
     @Delete(':id')
-    async delete(@Param('id') id: string): Promise<string> {
+    async delete(@Param('id') id: string): Promise<{ ok?: number; n?: number; } & { deletedCount?: number; }> {
         return await this.userService.delete(id);
     }
 
-    @Put(':id')
-    async update(
-        @Param('id') id: string,
-        @Body('newBody') b: string,
-    ): Promise<IUser> {
-        return await this.userService.update(id, b);
+    @Delete(':id/bodies')
+    async deleteBodies(@Param('id') id: string): Promise<IUser> {
+        return await this.userService.deleteBodies(id);
     }
+
+
+    @UseGuards(JwtAuthGuard)
+    @Put(':id')
+    async updateCreateBody(
+        @Request() req,
+        @Param('id') bodyId: string,
+        @Body('rate') r: number,
+    ): Promise<UpdateBodyResponse> {
+        return await this.userService.updateCreateBody(req.user.userId, bodyId, r);
+    }
+
+
 }

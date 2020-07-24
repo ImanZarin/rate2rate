@@ -1,39 +1,44 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { IUser } from './user.model';
+import { IUser, IBody } from './user.model';
 import { Model } from 'mongoose';
+import passport = require('passport');
+import { UpdateBodyResponse } from 'src/apiTypes';
+import { UpdateBodyResponseResult } from 'src/shared/result.enums';
 
 @Injectable()
 export class UserService {
 
-    constructor(@InjectModel('User') private readonly userModel: Model<IUser>) {
-
-    }
+    constructor(@InjectModel('User') private readonly userModel: Model<IUser>) { }
 
     async getAll(): Promise<IUser[]> {
         const result = await this.userModel.find().exec();
         return result;
     }
 
-    async create(username: string, email: string): Promise<string> {
-        let sameUserId = await this.searchName(username);
-        if (!sameUserId)
-            sameUserId = await this.searchEmail(email);
+    async create(email: string, pass: string, username: string): Promise<IUser> {
+        const sameUserId = await this.searchEmail(email);
+        let _username = username;
+        if (username.length == 0) {
+            _username = email;
+        }
         if (!sameUserId) {
             const newUser = new this.userModel({
-                username: username,
+                username: _username,
                 email: email,
                 admin: false,
-                bodies: []
+                bodies: [],
+                password: pass
             });
-            const result = await newUser.save();
-            return result.id as string;
+            const savedUser: IUser = await newUser.save();
+            passport.authenticate('local');
+            return savedUser;
         }
-        else //user exist
+        else //user email exist
             return null;
     }
 
-    async find(id: string): Promise<IUser> {
+    async find(id: string): Promise<IUser | undefined> {
         const result = await this.userModel.findById(id);
         return result;
     }
@@ -53,12 +58,46 @@ export class UserService {
         return result;
     }
 
-    async update(id: string, newBodyId: string)
-        : Promise<IUser> {
+    async updateCreateBody(userId: string, newBodyId: string, rate: number): Promise<UpdateBodyResponse> {
+        const user = await this.userModel.findById(userId);
+        if (user == null) {
+            return {
+                result: UpdateBodyResponseResult.userNotFound,
+                user: null
+            }
+        }
+        if ((user as IUser)._id == newBodyId) {
+            return {
+                result: UpdateBodyResponseResult.userIsBody,
+                user: user
+            }
+        }
+        const body = (user as IUser).bodies.filter(x => x.bodyUserId === newBodyId)[0];
+        const index = (user as IUser).bodies.indexOf(body);
+        if (body) {
+            (user as IUser).bodies[index].rate = rate;
+        }
+        else {
+            const newBody: IBody = {
+                rate: rate,
+                bodyUserId: newBodyId
+            };
+            (user as IUser).bodies.push(newBody);
+        };
+        user.markModified("bodies");
+        user.save();
+        return {
+            result: UpdateBodyResponseResult.success,
+            user: user
+        }
+    }
 
-        const updated = await this.userModel.findById(id);
-        updated.bodies.push(newBodyId);
-        updated.save();
-        return updated;
+    async deleteBodies(id: string): Promise<IUser> {
+        const user = await this.userModel.findById(id);
+        if (user) {
+            user.bodies = [];
+            user.save();
+        }
+        return user;
     }
 }

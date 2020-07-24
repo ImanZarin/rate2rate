@@ -2,7 +2,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
-const config = require('../config');
+const config = require('./config');
 const port = config.port;
 const cors = require('./cors');
 

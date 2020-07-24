@@ -1,7 +1,8 @@
-import { Controller, Get, Put, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Put, Body, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { MovieUserService } from './movieusers.service';
 import { IMovieUser } from './movieusers.model';
-import { FindForUserResponse } from 'src/apiTypes';
+import { GetUserInfoResponse, GetUserInfoForSignedResponse } from 'src/apiTypes';
+import { JwtAuthOptionalGuard } from '../auth/jwt-auth-optional.guard';
 
 @Controller('movieusers')
 export class MovieUserController {
@@ -12,9 +13,17 @@ export class MovieUserController {
         return await this.muService.getAll();
     }
 
+    @UseGuards(JwtAuthOptionalGuard)
     @Get(':id')
-    async getMovies(@Param('id') id: string): Promise<FindForUserResponse> {
-        return await this.muService.findForUser(id);
+    async getInfo(
+        @Param('id') id: string,
+        @Request() req): Promise<GetUserInfoForSignedResponse | GetUserInfoResponse> {
+        if (req.user.username) {
+            //TODO if id === user._id redirect to profile page
+            return await this.muService.findForUserExtra(id, req.user.username);
+        } else {
+            return await this.muService.findForUser(id);
+        }
     }
 
     @Put()
@@ -33,8 +42,13 @@ export class MovieUserController {
     }
 
     @Delete(':id')
-    async delete(@Param('id') id: string): Promise<string> {
+    async delete(@Param('id') id: string): Promise<{ ok?: number; n?: number; } & { deletedCount?: number; }> {
         return await this.muService.delete(id);
+    }
+
+    @Delete()
+    async deleteAll(): Promise<{ ok?: number; n?: number; } & { deletedCount?: number; }> {
+        return await this.muService.deleteAll();
     }
 
     @Put(':id')

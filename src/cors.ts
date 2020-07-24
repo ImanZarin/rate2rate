@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { Constants } from "app.constants";
+import { Constants } from "src/app.constants";
 
 const express = require('express');
 const cors = require('cors');

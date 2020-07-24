@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import { Constants } from '../../app.constants';
+import { Constants } from '../app.constants';
 import { Document } from 'mongoose';
 
 export interface IMovie extends Document {

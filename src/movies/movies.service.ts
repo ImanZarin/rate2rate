@@ -4,6 +4,7 @@ import { IMovie } from './movie.model';
 import { Model, Document } from 'mongoose';
 
 
+
 @Injectable()
 export class MovieService {
 
@@ -35,7 +36,7 @@ export class MovieService {
     }
 
     async findMovies(ids: string[]): Promise<IMovie[]> {
-        const result = await this.movieModel.find({ _id : ids});
+        const result = await this.movieModel.find({ _id: { $in: ids } });
         return result;
     }
 
@@ -54,7 +55,7 @@ export class MovieService {
 
     async update(id: string, title: string, yr: number, brief: string, imgUrl: string, genre: string[], cast: string[])
         : Promise<IMovie> {
-        const updated: Document = await this.movieModel.findById(id);
+        const updated: IMovie = await this.movieModel.findById(id);
         if (title)
             updated.title = title;
         if (yr)
