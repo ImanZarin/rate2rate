@@ -2,6 +2,7 @@ import { Controller, Get, Put, Body, Param, Delete, UseGuards, Request, Post } f
 import { UserService } from './users.service';
 import { IUser } from './user.model';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { UpdateBodyResponse } from 'src/apiTypes';
 
 @Controller('users')
 export class UserController {
@@ -39,7 +40,7 @@ export class UserController {
         @Request() req,
         @Param('id') bodyId: string,
         @Body('rate') r: number,
-    ): Promise<IUser> {
+    ): Promise<UpdateBodyResponse> {
         return await this.userService.updateCreateBody(req.user.userId, bodyId, r);
     }
 

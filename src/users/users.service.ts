@@ -3,6 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { IUser, IBody } from './user.model';
 import { Model } from 'mongoose';
 import passport = require('passport');
+import { UpdateBodyResponse } from 'src/apiTypes';
+import { UpdateBodyResponseResult } from 'src/shared/result.enums';
 
 @Injectable()
 export class UserService {
@@ -33,11 +35,7 @@ export class UserService {
             return savedUser;
         }
         else //user email exist
-        {
-            console.log("email has already been used");
-            //TODO Error for used email
             return null;
-        }
     }
 
     async find(id: string): Promise<IUser | undefined> {
@@ -60,15 +58,19 @@ export class UserService {
         return result;
     }
 
-    async updateCreateBody(userId: string, newBodyId: string, rate: number): Promise<IUser> {
+    async updateCreateBody(userId: string, newBodyId: string, rate: number): Promise<UpdateBodyResponse> {
         const user = await this.userModel.findById(userId);
         if (user == null) {
-            console.log("this user does not exist");
-            return null;
+            return {
+                result: UpdateBodyResponseResult.userNotFound,
+                user: null
+            }
         }
         if ((user as IUser)._id == newBodyId) {
-            console.log("you are not able to rate yourself");
-            return null;
+            return {
+                result: UpdateBodyResponseResult.userIsBody,
+                user: user
+            }
         }
         const body = (user as IUser).bodies.filter(x => x.bodyUserId === newBodyId)[0];
         const index = (user as IUser).bodies.indexOf(body);
@@ -84,7 +86,10 @@ export class UserService {
         };
         user.markModified("bodies");
         user.save();
-        return user;
+        return {
+            result: UpdateBodyResponseResult.success,
+            user: user
+        }
     }
 
     async deleteBodies(id: string): Promise<IUser> {

@@ -1,5 +1,5 @@
 import { IUser } from "./users/user.model";
-import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult } from "./shared/result.enums";
+import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, LoginUserResponseResult, UpdateBodyResponseResult } from "./shared/result.enums";
 
 export interface GetUserInfoResponse {
     result: GetUserInfoResponseResult,
@@ -15,6 +15,7 @@ export interface GetUserInfoForSignedResponse {
 }
 
 export interface LoginUserResponse {
+    result: LoginUserResponseResult,
     accessToken: string,
     user: IUser
 }
@@ -24,5 +25,9 @@ export interface MovieRate {
     title: string;
     year: number;
     rate: number;
+}
 
+export interface UpdateBodyResponse {
+    result: UpdateBodyResponseResult,
+    user: IUser
 }
