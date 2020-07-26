@@ -1,6 +1,7 @@
 import { IUser } from "./users/user.model";
-import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, LoginUserResponseResult, UpdateBodyResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult } from "./shared/result.enums";
-import { IMovie } from "./movies/movie.model";
+import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, LoginUserResponseResult, UpdateBodyResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult, UpdateMovieRateResponseResult, SearchMovieResponseResult } from "./shared/result.enums";
+import { IMovie, IMDBsearch } from "./movies/movie.model";
+import { IMovieUser } from "./movieusers/movieusers.model";
 
 export interface GetUserInfoResponse {
     result: GetUserInfoResponseResult,
@@ -50,4 +51,14 @@ export interface GetMovieInfoForSignedResponse {
     movie: IMovie,
     users: UserRate[],
     rate: number
+}
+
+export interface UpdateMovieRateResponse {
+    result: UpdateMovieRateResponseResult,
+    movieuser: IMovieUser
+}
+
+export interface SearchMovieResponse {
+    result: SearchMovieResponseResult,
+    movies: IMDBsearch[]
 }

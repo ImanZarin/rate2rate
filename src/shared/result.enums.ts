@@ -35,3 +35,14 @@ export enum GetMovieInfoForSignedResponseResult {
     movieNotFound = "USER_NOT_FOUND",
     listEmpty = "EMPTY_LIST",
 }
+
+export enum UpdateMovieRateResponseResult {
+    success = "SUCCESS",
+    movieuserNotFound = "MOVIEUSER_NOT_FOUND"
+}
+
+export enum SearchMovieResponseResult {
+    success = "SUCCESS",
+    listEmpty = "EMPTY_LIST",
+    failed = "FAIL"
+}

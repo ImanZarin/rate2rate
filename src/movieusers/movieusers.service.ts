@@ -3,11 +3,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { IMovieUser } from './movieusers.model';
 import { Model, Document } from 'mongoose';
 import { IMovie } from 'src/movies/movie.model';
-import { GetUserInfoResponse, MovieRate, GetUserInfoForSignedResponse, GetMovieInfoResponse, UserRate, GetMovieInfoForSignedResponse } from 'src/apiTypes';
+import { GetUserInfoResponse, MovieRate, GetUserInfoForSignedResponse, GetMovieInfoResponse, UserRate, GetMovieInfoForSignedResponse, UpdateMovieRateResponse } from 'src/apiTypes';
 import { UserService } from '../users/users.service';
 import { MovieService } from 'src/movies/movies.service';
 import { IUser, IBody } from 'src/users/user.model';
-import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult } from 'src/shared/result.enums';
+import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult, UpdateMovieRateResponseResult } from 'src/shared/result.enums';
 
 @Injectable()
 export class MovieUserService {
@@ -22,14 +22,17 @@ export class MovieUserService {
         return result;
     }
 
-    async create(user: string, rate: number, movie: string): Promise<IMovieUser> {
+    async create(user: string, rate: number, movie: string): Promise<UpdateMovieRateResponse> {
         const newMovieUser = new this.movieuserModel({
             userId: user,
             movieId: movie,
             rate: rate
         });
-        const result = await newMovieUser.save();
-        return result;
+        const res = await newMovieUser.save();
+        return {
+            result: UpdateMovieRateResponseResult.success,
+            movieuser: res
+        };
     }
 
     async find(id: string): Promise<IMovieUser> {
@@ -163,12 +166,13 @@ export class MovieUserService {
             }
         }
         const signedUser = await this.userService.searchEmail(signedName);
-        const signedUserRate: IMovieUser = await this.movieuserModel.find({ userId: signedUser._id, movieId: id })[0];
+        const signedUserRate: IMovieUser = await this.search(signedUser._id, id);
+        let updatedUsers: UserRate[] = re1.users;
         if (signedName && signedUserRate) {
             _rate = signedUserRate.rate;
-            re1.users.filter(u => u._id != signedUser._id);
+            updatedUsers = re1.users.filter(u => u._id.toString() != signedUser._id.toString());
         }
-        if (re1.result == GetMovieInfoResponseResult.listEmpty) {
+        if (re1.result == GetMovieInfoResponseResult.listEmpty || updatedUsers.length < 1) {
             return {
                 result: GetMovieInfoForSignedResponseResult.listEmpty,
                 movie: re1.movie,
@@ -179,7 +183,7 @@ export class MovieUserService {
         return {
             result: GetMovieInfoForSignedResponseResult.success,
             movie: re1.movie,
-            users: re1.users,
+            users: updatedUsers,
             rate: _rate
         }
     }
@@ -189,9 +193,9 @@ export class MovieUserService {
         return result;
     }
 
-    async search(userId: string, movieId: string): Promise<string> {
-        const result = await this.movieuserModel.find({ movieId: movieId, userId: userId })[0];
-        return result._id;
+    async search(userId: string, movieId: string): Promise<IMovieUser> {
+        const result = await this.movieuserModel.find({ movieId: movieId, userId: userId });
+        return result[0];
     }
 
     async delete(id: string) {
@@ -205,11 +209,19 @@ export class MovieUserService {
     }
 
     async update(id: string, rate: number)
-        : Promise<IMovieUser> {
+        : Promise<UpdateMovieRateResponse> {
         const updated: IMovieUser = await this.movieuserModel.findById(id);
+        if (!updated)
+            return {
+                result: UpdateMovieRateResponseResult.movieuserNotFound,
+                movieuser: null
+            }
         if (rate)
             updated.rate = rate;
         updated.save();
-        return updated as IMovieUser;
+        return {
+            result: UpdateMovieRateResponseResult.success,
+            movieuser: updated
+        }
     }
 }

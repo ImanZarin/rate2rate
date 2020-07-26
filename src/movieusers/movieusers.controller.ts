@@ -1,8 +1,9 @@
 import { Controller, Get, Put, Body, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { MovieUserService } from './movieusers.service';
 import { IMovieUser } from './movieusers.model';
-import { GetUserInfoResponse, GetUserInfoForSignedResponse, GetMovieInfoResponse, GetMovieInfoForSignedResponse } from 'src/apiTypes';
+import { GetUserInfoResponse, GetUserInfoForSignedResponse, GetMovieInfoResponse, GetMovieInfoForSignedResponse, UpdateMovieRateResponse, UpdateBodyResponse } from 'src/apiTypes';
 import { JwtAuthOptionalGuard } from '../auth/jwt-auth-optional.guard';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('movieusers')
 export class MovieUserController {
@@ -38,18 +39,19 @@ export class MovieUserController {
         }
     }
 
-    @Put()
+    @UseGuards(JwtAuthGuard)
+    @Put(':movieId')
     async updateAndcreate(
-        @Body('userId') u: string,
+        @Request() req,
         @Body('rate') r: number,
-        @Body('movieId') m: string,
-    ): Promise<IMovieUser> {
-        const id: string = await this.muService.search(u, m);
-        if (id) {
-            return await this.muService.update(id, r);
+        @Param('movieId') m: string,
+    ): Promise<UpdateMovieRateResponse> {
+        const iMovieUser: IMovieUser = await this.muService.search(req.user.userId, m);
+        if (iMovieUser) {
+            return await this.muService.update(iMovieUser._id, r);
         }
         else {
-            return await this.muService.create(u, r, m);
+            return await this.muService.create(req.user.userId, r, m);
         }
     }
 
@@ -63,12 +65,4 @@ export class MovieUserController {
         return await this.muService.deleteAll();
     }
 
-    @Put(':id')
-    async update(
-        @Param('id') id: string,
-        @Body('r') r: number,)
-        : Promise<IMovieUser> {
-        return await this.muService.update(id, r);
-
-    }
 }
