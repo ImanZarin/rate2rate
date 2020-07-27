@@ -40,11 +40,9 @@ export class MovieService {
     async createFromImdb(imdbId: string): Promise<string> {
         const imdbMovie = await this.findFromIMDB(imdbId);
         if (imdbMovie) {
-            console.log("check to see if plot exist: ", imdbMovie.Plot);
             const result = await this.create(imdbMovie.Title, imdbMovie.Year, imdbMovie.Plot,
                 imdbMovie.Poster, imdbMovie.Genre.split(","), imdbMovie.Actors.split(","),
                 imdbMovie.Director.split(","), imdbMovie.imdbID);
-            console.log("created movie from imdb: ", result);
             return result._id as string;
         }
         else
@@ -71,7 +69,6 @@ export class MovieService {
 
     async searchDBWithImdb(imdbId: string): Promise<string> {
         const result = await this.movieModel.findOne({ imdbId: imdbId });
-        console.log("search db for imdb: ", result);
         if (result)
             return result._id as string;
         else
@@ -152,7 +149,6 @@ export class MovieService {
                     return null;
                 else {
                     const { data } = resp;
-                    console.log("imdb response is: ", data);
                     return data;
                 }
             })
