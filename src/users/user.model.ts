@@ -2,9 +2,11 @@ import { Schema, Document } from 'mongoose';
 
 import passportLocalMongoose = require('passport-local-mongoose');
 
-export interface IBody {
-    bodyUserId: string;
+export interface IBuddy {
+    buddyId: string;
+    buddyName: string;
     rate: number;
+    timeStamp: string;
 }
 
 
@@ -29,7 +31,7 @@ export interface IUser extends Document {
     username: string;
     email: string;
     admin: boolean;
-    bodies: IBody[];
+    buddies: IBuddy[];
     password: string;
 }
 
@@ -49,7 +51,7 @@ export const UserSchema: Schema = new Schema({
         default: false,
         required: true
     },
-    bodies: {
+    buddies: {
         type: Array,
         default: [],
         required: false

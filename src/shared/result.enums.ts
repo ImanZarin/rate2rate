@@ -17,10 +17,10 @@ export enum LoginUserResponseResult {
     repetedEmail = "EMAIL_ALREADY_EXIST"
 }
 
-export enum UpdateBodyResponseResult {
+export enum UpdateBuddyResponseResult {
     success = "SUCCESS",
     userNotFound = "USER_NOT_FOUND",
-    userIsBody = "USER_SAME_AS_BODY",
+    userIsBuddy = "USER_SAME_AS_BUDDY",
 
 }
 
@@ -45,4 +45,12 @@ export enum SearchMovieResponseResult {
     success = "SUCCESS",
     listEmpty = "EMPTY_LIST",
     failed = "FAIL"
+}
+
+export enum GetProfileInfoResponseResult {
+    success = "SUCCESS",
+    noMovie = "EMPTY_MOVIE_LIST",
+    noBuddy = "EMPTY_BUDDY_LIST",
+    noMovienoBuddy = "EMPTY_BOTH_LIST",
+    noUser = "USER_NOT_FOUND"
 }

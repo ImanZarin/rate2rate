@@ -7,6 +7,7 @@ export interface IMovieUser extends Document {
     userId: string;
     rate: number;
     movieId: string;
+    timeStamp: string; 
 }
 
 export const MovieUserSchema = new Schema({
@@ -23,6 +24,10 @@ export const MovieUserSchema = new Schema({
         required: true,
         min: Constants.minMovieRate,
         max: Constants.maxMovieRate
+    },
+    timeStamp: {
+        type: String,
+        required: true
     }
 });
 

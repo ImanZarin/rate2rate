@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { IUser, IBody } from './user.model';
+import { IUser, IBuddy } from './user.model';
 import { Model } from 'mongoose';
 import passport = require('passport');
-import { UpdateBodyResponse } from 'src/apiTypes';
-import { UpdateBodyResponseResult } from 'src/shared/result.enums';
+import { UpdateBuddyResponse } from 'src/apiTypes';
+import { UpdateBuddyResponseResult } from 'src/shared/result.enums';
 
 @Injectable()
 export class UserService {
@@ -63,46 +63,52 @@ export class UserService {
         return result;
     }
 
-    async updateCreateBody(userId: string, newBodyId: string, rate: number): Promise<UpdateBodyResponse> {
+    async updateCreateBuddy(userId: string, newBuddyId: string, rate: number): Promise<UpdateBuddyResponse> {
         const user = await this.userModel.findById(userId);
         if (user == null) {
             return {
-                result: UpdateBodyResponseResult.userNotFound,
+                result: UpdateBuddyResponseResult.userNotFound,
                 user: null
             }
         }
-        if ((user as IUser)._id == newBodyId) {
+        if ((user as IUser)._id == newBuddyId) {
             return {
-                result: UpdateBodyResponseResult.userIsBody,
+                result: UpdateBuddyResponseResult.userIsBuddy,
                 user: user
             }
         }
-        const body = (user as IUser).bodies.filter(x => x.bodyUserId === newBodyId)[0];
-        const index = (user as IUser).bodies.indexOf(body);
-        if (body) {
-            (user as IUser).bodies[index].rate = rate;
+        const buddy = (user as IUser).buddies.filter(x => x.buddyId === newBuddyId)[0];
+        const index = (user as IUser).buddies.indexOf(buddy);
+        if (buddy) {
+            (user as IUser).buddies[index].rate = rate;
+            (user as IUser).buddies[index].timeStamp = (new Date()).toUTCString();
         }
         else {
-            const newBody: IBody = {
+            const newBuddyName = (await this.find([newBuddyId]))[0].username;
+            const newBuddy: IBuddy = {
                 rate: rate,
-                bodyUserId: newBodyId
+                buddyName: newBuddyName,
+                buddyId: newBuddyId,
+                timeStamp: (new Date()).toUTCString()
             };
-            (user as IUser).bodies.push(newBody);
+            (user as IUser).buddies.push(newBuddy);
         };
-        user.markModified("bodies");
+        user.markModified("buddies");
         user.save();
         return {
-            result: UpdateBodyResponseResult.success,
+            result: UpdateBuddyResponseResult.success,
             user: user
         }
     }
 
-    async deleteBodies(id: string): Promise<IUser> {
+    async deleteBuddies(id: string): Promise<IUser> {
         const user = await this.userModel.findById(id);
         if (user) {
-            user.bodies = [];
+            user.buddies = [];
+            user.markModified("buddies");
             user.save();
         }
         return user;
     }
+
 }

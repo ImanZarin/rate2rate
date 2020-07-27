@@ -1,16 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { IMovieUser } from './movieusers.model';
-import { Model, Document } from 'mongoose';
+import { Model } from 'mongoose';
 import { IMovie } from 'src/movies/movie.model';
-import { GetUserInfoResponse, MovieRate, GetUserInfoForSignedResponse, GetMovieInfoResponse, UserRate, GetMovieInfoForSignedResponse, UpdateMovieRateResponse } from 'src/apiTypes';
+import { GetUserInfoResponse, MovieRate, GetUserInfoForSignedResponse, GetMovieInfoResponse, UserRate, GetMovieInfoForSignedResponse, UpdateMovieRateResponse, GetProfileInfoResponse } from 'src/apiTypes';
 import { UserService } from '../users/users.service';
 import { MovieService } from 'src/movies/movies.service';
-import { IUser, IBody } from 'src/users/user.model';
-import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult, UpdateMovieRateResponseResult } from 'src/shared/result.enums';
+import { IUser, IBuddy } from 'src/users/user.model';
+import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult, UpdateMovieRateResponseResult, GetProfileInfoResponseResult } from 'src/shared/result.enums';
 
 @Injectable()
 export class MovieUserService {
+
     constructor(@InjectModel('MovieUser') private readonly movieuserModel: Model<IMovieUser>,
         private readonly movieService: MovieService,
         private readonly userService: UserService
@@ -23,10 +24,12 @@ export class MovieUserService {
     }
 
     async create(user: string, rate: number, movie: string): Promise<UpdateMovieRateResponse> {
+        const now = new Date();
         const newMovieUser = new this.movieuserModel({
             userId: user,
             movieId: movie,
-            rate: rate
+            rate: rate,
+            timeStamp: now.toUTCString()
         });
         const res = await newMovieUser.save();
         return {
@@ -94,9 +97,9 @@ export class MovieUserService {
             }
         }
         const signedUser: IUser = await this.userService.searchEmail(signedName);
-        const _body: IBody = signedUser.bodies.filter(x => x.bodyUserId == id)[0];
-        if (_body)
-            _rate = _body.rate;
+        const _buddy: IBuddy = signedUser.buddies.filter(x => x.buddyId == id)[0];
+        if (_buddy)
+            _rate = _buddy.rate;
         if (re1.result == GetUserInfoResponseResult.listEmpty) {
             return {
                 result: GetUserInfoForSignedResponseResult.listEmpty,
@@ -216,12 +219,42 @@ export class MovieUserService {
                 result: UpdateMovieRateResponseResult.movieuserNotFound,
                 movieuser: null
             }
-        if (rate)
+        if (rate) {
             updated.rate = rate;
+            updated.timeStamp = (new Date()).toUTCString();
+        }
         updated.save();
         return {
             result: UpdateMovieRateResponseResult.success,
             movieuser: updated
         }
+    }
+
+    async getProfileInfo(userId: string): Promise<GetProfileInfoResponse> {
+        const userInfo = await this.findForUser(userId);
+        if (userInfo.result == GetUserInfoResponseResult.userNotFound)
+            return {
+                result: GetProfileInfoResponseResult.noUser,
+                movies: [],
+                me: null
+            }
+        if (userInfo.user.buddies.length < 1 && userInfo.result == GetUserInfoResponseResult.listEmpty)
+            return {
+                result: GetProfileInfoResponseResult.noMovienoBuddy,
+                movies: [],
+                me: userInfo.user
+            }
+        if (userInfo.user.buddies.length < 1)
+            return {
+                result: GetProfileInfoResponseResult.noBuddy,
+                movies: userInfo.movies,
+                me: userInfo.user
+            }
+            if (userInfo.result == GetUserInfoResponseResult.listEmpty)
+            return {
+                result: GetProfileInfoResponseResult.noMovie,
+                movies: [],
+                me: userInfo.user
+            }
     }
 }
