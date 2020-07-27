@@ -38,8 +38,13 @@ export class UserService {
             return null;
     }
 
-    async find(id: string): Promise<IUser | undefined> {
-        const result = await this.userModel.findById(id);
+    async find(ids: string[]): Promise<IUser[] | undefined> {
+        const result = [];
+        for (const id of ids) {
+            const r = await this.userModel.findById(id);
+            if (r)
+                result.push(r);
+        }
         return result;
     }
 

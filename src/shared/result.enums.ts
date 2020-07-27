@@ -23,3 +23,26 @@ export enum UpdateBodyResponseResult {
     userIsBody = "USER_SAME_AS_BODY",
 
 }
+
+export enum GetMovieInfoResponseResult {
+    success = "SUCCESS",
+    movieNotFound = "USER_NOT_FOUND",
+    listEmpty = "EMPTY_LIST",
+}
+
+export enum GetMovieInfoForSignedResponseResult {
+    success = "SUCCESS",
+    movieNotFound = "USER_NOT_FOUND",
+    listEmpty = "EMPTY_LIST",
+}
+
+export enum UpdateMovieRateResponseResult {
+    success = "SUCCESS",
+    movieuserNotFound = "MOVIEUSER_NOT_FOUND"
+}
+
+export enum SearchMovieResponseResult {
+    success = "SUCCESS",
+    listEmpty = "EMPTY_LIST",
+    failed = "FAIL"
+}
