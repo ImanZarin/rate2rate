@@ -37,7 +37,7 @@ export class MovieUserController {
         @Param('id') id: string,
         @Request() req): Promise<GetMovieInfoForSignedResponse | GetMovieInfoResponse> {
         if (req.user.username) {
-            return await this.muService.findForMovieExtra(id, req.user.username);
+            return await this.muService.findForMovieExtra(id, req.user.userId);
         } else {
             return await this.muService.findForMovie(id);
         }
@@ -53,6 +53,7 @@ export class MovieUserController {
             return {
                 result: GetProfileInfoResponseResult.noUser,
                 movies: [],
+                buddies: [],
                 me: null
             }
     }

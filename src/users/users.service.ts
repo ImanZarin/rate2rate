@@ -28,7 +28,8 @@ export class UserService {
                 email: email,
                 admin: false,
                 bodies: [],
-                password: pass
+                password: pass,
+                insertDate: (new Date()).toISOString()
             });
             const savedUser: IUser = await newUser.save();
             passport.authenticate('local');
@@ -81,18 +82,17 @@ export class UserService {
         const index = (user as IUser).buddies.indexOf(buddy);
         if (buddy) {
             (user as IUser).buddies[index].rate = rate;
-            (user as IUser).buddies[index].timeStamp = (new Date()).toUTCString();
+            (user as IUser).buddies[index].rateDate = (new Date()).toISOString();
         }
         else {
-            const newBuddyName = (await this.find([newBuddyId]))[0].username;
             const newBuddy: IBuddy = {
                 rate: rate,
-                buddyName: newBuddyName,
                 buddyId: newBuddyId,
-                timeStamp: (new Date()).toUTCString()
+                rateDate: (new Date()).toISOString()
             };
             (user as IUser).buddies.push(newBuddy);
         };
+        user.updateDate = (new Date()).toISOString();
         user.markModified("buddies");
         user.save();
         return {

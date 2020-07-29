@@ -31,7 +31,8 @@ export class MovieService {
             genre: genre,
             cast: cast,
             director: directors,
-            imdbId: imdbId
+            imdbId: imdbId,
+            insertDate: (new Date()).toISOString()
         });
         const result = await newMovie.save();
         return result;
@@ -131,6 +132,7 @@ export class MovieService {
             updated.genre = genre;
         if (cast)
             updated.cast = cast;
+        updated.updateDate = (new Date()).toISOString();
         updated.save();
         return updated as IMovie;
     }

@@ -4,9 +4,8 @@ import passportLocalMongoose = require('passport-local-mongoose');
 
 export interface IBuddy {
     buddyId: string;
-    buddyName: string;
     rate: number;
-    timeStamp: string;
+    rateDate: string;
 }
 
 
@@ -33,6 +32,8 @@ export interface IUser extends Document {
     admin: boolean;
     buddies: IBuddy[];
     password: string;
+    insertDate: string;
+    updateDate: string;
 }
 
 export const UserSchema: Schema = new Schema({
@@ -58,8 +59,15 @@ export const UserSchema: Schema = new Schema({
     },
     password: {
         type: String,
-        default: "",
         required: true
+    },
+    insertDate: {
+        type: String,
+        required: true
+    },
+    updateDate: {
+        type: String,
+        required: false
     }
 });
 

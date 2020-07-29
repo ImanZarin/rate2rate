@@ -26,7 +26,7 @@ export enum UpdateBuddyResponseResult {
 
 export enum GetMovieInfoResponseResult {
     success = "SUCCESS",
-    movieNotFound = "USER_NOT_FOUND",
+    movieNotFound = "MOVIE_NOT_FOUND",
     listEmpty = "EMPTY_LIST",
 }
 
@@ -34,6 +34,7 @@ export enum GetMovieInfoForSignedResponseResult {
     success = "SUCCESS",
     movieNotFound = "USER_NOT_FOUND",
     listEmpty = "EMPTY_LIST",
+    userFake = "User_NOT_RECOGNIZED"
 }
 
 export enum UpdateMovieRateResponseResult {

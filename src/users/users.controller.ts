@@ -8,16 +8,19 @@ import { UpdateBuddyResponse } from 'src/apiTypes';
 export class UserController {
     constructor(private readonly userService: UserService) { }
 
+    //TODO admin guard
     @Get()
     async getAll(): Promise<IUser[]> {
         return await this.userService.getAll();
     }
 
+    //TODO admin guard
     @Delete(':id')
     async delete(@Param('id') id: string): Promise<{ ok?: number; n?: number; } & { deletedCount?: number; }> {
         return await this.userService.delete(id);
     }
 
+    //TODO admin guard
     @Delete(':id/buddies')
     async deleteBodies(@Param('id') id: string): Promise<IUser> {
         return await this.userService.deleteBuddies(id);

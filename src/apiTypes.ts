@@ -28,12 +28,14 @@ export interface MovieRate {
     title: string;
     year: number;
     rate: number;
+    rateDate: string;
 }
 
 export interface UserRate {
-    _id: string;
-    name: string;
+    buddyId: string;
+    buddyName: string;
     rate: number;
+    rateDate: string;
 }
 
 export interface UpdateBuddyResponse {
@@ -67,5 +69,6 @@ export interface SearchMovieResponse {
 export interface GetProfileInfoResponse {
     result: GetProfileInfoResponseResult,
     movies: MovieRate[],
+    buddies: UserRate[],
     me: IUser
 }
