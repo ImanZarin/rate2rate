@@ -1,7 +1,7 @@
 import { Controller, Get, Put, Body, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { MovieUserService } from './movieusers.service';
 import { IMovieUser } from './movieusers.model';
-import { GetUserInfoResponse, GetUserInfoForSignedResponse, GetMovieInfoResponse, GetMovieInfoForSignedResponse, UpdateMovieRateResponse, UpdateBodyResponse } from 'src/apiTypes';
+import { GetUserInfoResponse, GetUserInfoForSignedResponse, GetMovieInfoResponse, GetMovieInfoForSignedResponse, UpdateMovieRateResponse, UpdateBodyResponse, GetRecentRatesResponse } from 'src/apiTypes';
 import { JwtAuthOptionalGuard } from '../auth/jwt-auth-optional.guard';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
@@ -37,6 +37,16 @@ export class MovieUserController {
         } else {
             return await this.muService.findForMovie(id);
         }
+    }
+
+    @UseGuards(JwtAuthOptionalGuard)
+    @Get('home')
+    async getHomeInfo(
+        @Request() req): Promise<GetRecentRatesResponse> {
+        if (req.user.userId)
+            return await this.muService.findRecentExtra(req.user.userId);
+        else
+            return await this.muService.findRecent();
     }
 
     @UseGuards(JwtAuthGuard)

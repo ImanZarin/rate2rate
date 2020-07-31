@@ -1,5 +1,5 @@
 import { IUser } from "./users/user.model";
-import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, LoginUserResponseResult, UpdateBodyResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult, UpdateMovieRateResponseResult, SearchMovieResponseResult } from "./shared/result.enums";
+import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, LoginUserResponseResult, UpdateBodyResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult, UpdateMovieRateResponseResult, SearchMovieResponseResult, GetRecentRatesResponseResult } from "./shared/result.enums";
 import { IMovie, IMDBsearch } from "./movies/movie.model";
 import { IMovieUser } from "./movieusers/movieusers.model";
 
@@ -61,4 +61,18 @@ export interface UpdateMovieRateResponse {
 export interface SearchMovieResponse {
     result: SearchMovieResponseResult,
     movies: IMDBsearch[]
+}
+
+export interface MovieUserNames {
+    movieId: string;
+    userId: string;
+    movieTitle: string;
+    userName: string;
+    rate: number;
+}
+
+export interface GetRecentRatesResponse {
+    result: GetRecentRatesResponseResult,
+    movies: MovieUserNames[],
+    suggestions: MovieUserNames[]
 }

@@ -3,11 +3,12 @@ import { InjectModel } from '@nestjs/mongoose';
 import { IMovieUser } from './movieusers.model';
 import { Model, Document } from 'mongoose';
 import { IMovie } from 'src/movies/movie.model';
-import { GetUserInfoResponse, MovieRate, GetUserInfoForSignedResponse, GetMovieInfoResponse, UserRate, GetMovieInfoForSignedResponse, UpdateMovieRateResponse } from 'src/apiTypes';
+import { GetUserInfoResponse, MovieRate, GetUserInfoForSignedResponse, GetMovieInfoResponse, UserRate, GetMovieInfoForSignedResponse, UpdateMovieRateResponse, GetRecentRatesResponse, MovieUserNames } from 'src/apiTypes';
 import { UserService } from '../users/users.service';
 import { MovieService } from 'src/movies/movies.service';
 import { IUser, IBody } from 'src/users/user.model';
-import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult, UpdateMovieRateResponseResult } from 'src/shared/result.enums';
+import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult, UpdateMovieRateResponseResult, GetRecentRatesResponseResult } from 'src/shared/result.enums';
+import { async } from 'rxjs/internal/scheduler/async';
 
 @Injectable()
 export class MovieUserService {
@@ -196,6 +197,49 @@ export class MovieUserService {
     async search(userId: string, movieId: string): Promise<IMovieUser> {
         const result = await this.movieuserModel.find({ movieId: movieId, userId: userId });
         return result[0];
+    }
+
+    private async getNameAndTitle(movieuser: IMovieUser): Promise<MovieUserNames>{
+        return{
+            movieId: movieuser.movieId,
+            userId: movieuser.userId,
+            movieTitle: (await this.movieService.find(movieuser.movieId)).title,
+            userName: (await this.userService.find([movieuser.userId]))[0].username,
+            rate: movieuser.rate
+        }
+    }
+
+    async findRecent(): Promise<GetRecentRatesResponse> {
+        const re: IMovieUser[] = await this.getAll();
+        //TODO sort based on rate date
+        re.slice(0,9);
+        const movieRateWithNames = await Promise.all(re.map(mu => this.getNameAndTitle(mu)));
+        if(re)
+        return {
+            result: GetRecentRatesResponseResult.success,
+            movies: movieRateWithNames,
+            suggestions: []
+        }
+        else
+        return {
+            result: GetRecentRatesResponseResult.fail,
+            movies: [],
+            suggestions: []
+        }
+    }
+
+    async findRecentExtra(id: string): Promise<GetRecentRatesResponse> {
+        const re = await this.findRecent();
+        const sug = await this.suggest(id);
+        return {
+            result: re.result,
+            movies: re.movies,
+            suggestions: sug
+        }
+    }
+
+    async suggest(id: string): Promise<MovieUserNames[]> {
+        return [];
     }
 
     async delete(id: string) {

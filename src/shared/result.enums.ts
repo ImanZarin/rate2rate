@@ -46,3 +46,8 @@ export enum SearchMovieResponseResult {
     listEmpty = "EMPTY_LIST",
     failed = "FAIL"
 }
+
+export enum GetRecentRatesResponseResult {
+    success = "SUCCESS",
+    fail = "FAIL"
+}
