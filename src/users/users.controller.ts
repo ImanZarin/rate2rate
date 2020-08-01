@@ -2,7 +2,7 @@ import { Controller, Get, Put, Body, Param, Delete, UseGuards, Request } from '@
 import { UserService } from './users.service';
 import { IUser } from './user.model';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { UpdateBuddyResponse } from 'src/apiTypes';
+import { UpdateBuddyResponse } from 'src/shared/apiTypes';
 
 @Controller('users')
 export class UserController {

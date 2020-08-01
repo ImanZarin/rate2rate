@@ -4,7 +4,7 @@ import { IMovieUser } from './movieusers.model';
 import {
     GetUserInfoResponse, GetUserInfoForSignedResponse, GetMovieInfoResponse,
     GetMovieInfoForSignedResponse, UpdateMovieRateResponse, GetProfileInfoResponse
-} from 'src/apiTypes';
+} from 'src/shared/apiTypes';
 import { JwtAuthOptionalGuard } from '../auth/jwt-auth-optional.guard';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { GetProfileInfoResponseResult } from 'src/shared/result.enums';
@@ -24,10 +24,9 @@ export class MovieUserController {
         @Param('id') id: string,
         @Request() req): Promise<GetUserInfoForSignedResponse | GetUserInfoResponse> {
         if (req.user.username) {
-            //TODO if id === user._id redirect to profile page
-            return await this.muService.findForUserExtra(id, req.user.username);
+            return await this.muService.findMoviesForUserExtra(id, req.user.username);
         } else {
-            return await this.muService.findForUser(id);
+            return await this.muService.findMoviesForUser(id);
         }
     }
 

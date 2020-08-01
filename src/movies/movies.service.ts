@@ -2,7 +2,7 @@ import { Injectable, HttpService } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { IMovie, IMDBsearch, IMDBmovie } from './movie.model';
 import { Model, Document } from 'mongoose';
-import { SearchMovieResponse } from 'src/apiTypes';
+import { SearchMovieResponse } from 'src/shared/apiTypes';
 import { SearchMovieResponseResult } from 'src/shared/result.enums';
 //import { Observable } from 'rxjs/internal/Observable';
 //import 'rxjs/add/operator/toPromise';

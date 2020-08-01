@@ -1,64 +1,48 @@
-import { IUser, IBuddy } from "./users/user.model";
 import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, LoginUserResponseResult, 
-    UpdateBuddyResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult, UpdateMovieRateResponseResult, SearchMovieResponseResult, GetProfileInfoResponseResult } from "./shared/result.enums";
-import { IMovie, IMDBsearch } from "./movies/movie.model";
-import { IMovieUser } from "./movieusers/movieusers.model";
+    UpdateBuddyResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult, UpdateMovieRateResponseResult, SearchMovieResponseResult, GetProfileInfoResponseResult } from "./result.enums";
+import { IMDBsearch } from "../movies/movie.model";
+import { MovieRate, UserRate, User, Movie } from "./dto.models";
 
 export interface GetUserInfoResponse {
     result: GetUserInfoResponseResult,
-    user: IUser,
+    user: User,
     movies: MovieRate[],
 }
 
 export interface GetUserInfoForSignedResponse {
     result: GetUserInfoForSignedResponseResult,
-    user: IUser,
+    user: User,
     movies: MovieRate[],
-    rate: number
+    buddy: UserRate
 }
 
 export interface LoginUserResponse {
     result: LoginUserResponseResult,
     accessToken: string,
-    user: IUser
-}
-
-export interface MovieRate {
-    _id: string;
-    title: string;
-    year: number;
-    rate: number;
-    rateDate: string;
-}
-
-export interface UserRate {
-    buddyId: string;
-    buddyName: string;
-    rate: number;
-    rateDate: string;
+    user: User
 }
 
 export interface UpdateBuddyResponse {
     result: UpdateBuddyResponseResult,
-    user: IUser
+    user: User
 }
 
 export interface GetMovieInfoResponse {
     result: GetMovieInfoResponseResult,
-    movie: IMovie,
-    users: UserRate[],
+    movie: Movie,
+    users: MovieRate[],
 }
 
 export interface GetMovieInfoForSignedResponse {
     result: GetMovieInfoForSignedResponseResult,
-    movie: IMovie,
-    users: UserRate[],
-    rate: number
+    movie: Movie,
+    users: MovieRate[],
+    myRate: MovieRate
 }
 
 export interface UpdateMovieRateResponse {
     result: UpdateMovieRateResponseResult,
-    movieuser: IMovieUser
+    movieuser: MovieRate
 }
 
 export interface SearchMovieResponse {
@@ -70,5 +54,5 @@ export interface GetProfileInfoResponse {
     result: GetProfileInfoResponseResult,
     movies: MovieRate[],
     buddies: UserRate[],
-    me: IUser
+    me: User
 }
