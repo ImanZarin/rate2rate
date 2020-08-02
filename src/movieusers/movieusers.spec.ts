@@ -55,7 +55,7 @@ describe('movie-user', () => {
         }).compile();
         const muService = app.get(MovieUserService);
         const r = await muService.create('5ed666e4cc8ec8697817e314', 4, '5eb466360884d346a82b58e5');
-        expect(r._id).toBe("5eb10b521852d65394a418da");
+        expect(r.movieuser._id).toBe("5eb10b521852d65394a418da");
     });
 
     it('find', async () => {

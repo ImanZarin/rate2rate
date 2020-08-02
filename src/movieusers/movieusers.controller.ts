@@ -1,9 +1,13 @@
 import { Controller, Get, Put, Body, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { MovieUserService } from './movieusers.service';
 import { IMovieUser } from './movieusers.model';
-import { GetUserInfoResponse, GetUserInfoForSignedResponse, GetMovieInfoResponse, GetMovieInfoForSignedResponse, UpdateMovieRateResponse, UpdateBodyResponse } from 'src/apiTypes';
+import {
+    GetUserInfoResponse, GetUserInfoForSignedResponse, GetMovieInfoResponse,
+    GetMovieInfoForSignedResponse, UpdateMovieRateResponse, GetProfileInfoResponse
+} from 'src/shared/apiTypes';
 import { JwtAuthOptionalGuard } from '../auth/jwt-auth-optional.guard';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { GetProfileInfoResponseResult } from 'src/shared/result.enums';
 
 @Controller('movieusers')
 export class MovieUserController {
@@ -20,10 +24,9 @@ export class MovieUserController {
         @Param('id') id: string,
         @Request() req): Promise<GetUserInfoForSignedResponse | GetUserInfoResponse> {
         if (req.user.username) {
-            //TODO if id === user._id redirect to profile page
-            return await this.muService.findForUserExtra(id, req.user.username);
+            return await this.muService.findMoviesForUserExtra(id, req.user.username);
         } else {
-            return await this.muService.findForUser(id);
+            return await this.muService.findMoviesForUser(id);
         }
     }
 
@@ -33,10 +36,25 @@ export class MovieUserController {
         @Param('id') id: string,
         @Request() req): Promise<GetMovieInfoForSignedResponse | GetMovieInfoResponse> {
         if (req.user.username) {
-            return await this.muService.findForMovieExtra(id, req.user.username);
+            return await this.muService.findForMovieExtra(id, req.user.userId);
         } else {
             return await this.muService.findForMovie(id);
         }
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('profile')
+    async getProfileInfo(
+        @Request() req): Promise<GetProfileInfoResponse> {
+        if (req.user)
+            return await this.muService.getProfileInfo(req.user.userId);
+        else
+            return {
+                result: GetProfileInfoResponseResult.noUser,
+                movies: [],
+                buddies: [],
+                me: null
+            }
     }
 
     @UseGuards(JwtAuthGuard)
