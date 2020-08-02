@@ -33,3 +33,10 @@ export type User = {
     email: string;
     buddies: UserRate[];
 }
+
+export type MovieSuggest = {
+    movieId: string;
+    movieTitle: string;
+    rates: number[];
+    likeability: number;
+}

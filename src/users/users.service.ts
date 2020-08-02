@@ -5,7 +5,7 @@ import { Model } from 'mongoose';
 import passport = require('passport');
 import { UpdateBuddyResponse } from 'src/shared/apiTypes';
 import { UpdateBuddyResponseResult } from 'src/shared/result.enums';
-import { UserRate, User } from 'src/shared/dto.models';
+import { User } from 'src/shared/dto.models';
 
 @Injectable()
 export class UserService {

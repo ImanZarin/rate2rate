@@ -3,12 +3,12 @@ import { InjectModel } from '@nestjs/mongoose';
 import { IMovieUser } from './movieusers.model';
 import { Model } from 'mongoose';
 import { IMovie } from 'src/movies/movie.model';
-import { GetUserInfoResponse, GetUserInfoForSignedResponse, GetMovieInfoResponse, GetMovieInfoForSignedResponse, UpdateMovieRateResponse, GetProfileInfoResponse, GetRecentRatesResponse } from 'src/shared/apiTypes';
+import { GetUserInfoResponse, GetUserInfoForSignedResponse, GetMovieInfoResponse, GetMovieInfoForSignedResponse, UpdateMovieRateResponse, GetProfileInfoResponse, GetRecentRatesResponse, GetRecentRatesForSignedResponse } from 'src/shared/apiTypes';
 import { UserService } from '../users/users.service';
 import { MovieService } from 'src/movies/movies.service';
 import { IUser } from 'src/users/user.model';
-import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult, UpdateMovieRateResponseResult, GetProfileInfoResponseResult, GetRecentRatesResponseResult } from 'src/shared/result.enums';
-import { MovieRate } from 'src/shared/dto.models';
+import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult, UpdateMovieRateResponseResult, GetProfileInfoResponseResult, GetRecentRatesResponseResult, GetRecentRatesForSignedResponseResult } from 'src/shared/result.enums';
+import { MovieRate, MovieSuggest } from 'src/shared/dto.models';
 
 @Injectable()
 export class MovieUserService {
@@ -38,7 +38,7 @@ export class MovieUserService {
             result: UpdateMovieRateResponseResult.success,
             movieuser: {
                 movieId: res.movieId,
-                movieTitle: await (await this.movieService.find(movie)).title,
+                movieTitle: await (await this.movieService.find([movie]))[0].title,
                 userId: res.userId,
                 userName: await (await this.userService.find([user]))[0].username,
                 rate: rate,
@@ -151,7 +151,7 @@ export class MovieUserService {
 
     async findForMovie(id: string): Promise<GetMovieInfoResponse> {
         const idList: IMovieUser[] = await this.movieuserModel.find({ movieId: id });
-        const movie: IMovie = await this.movieService.find(id);
+        const movie: IMovie = await this.movieService.find([id])[0];
         if (!movie) {
             return {
                 result: GetMovieInfoResponseResult.movieNotFound,
@@ -276,48 +276,91 @@ export class MovieUserService {
         return result[0];
     }
 
-    private async getNameAndTitle(movieuser: IMovieUser): Promise<MovieRate> {
-        return {
-            movieId: movieuser.movieId,
-            userId: movieuser.userId,
-            movieTitle: (await this.movieService.find(movieuser.movieId)).title,
-            userName: (await this.userService.find([movieuser.userId]))[0].username,
-            rate: movieuser.rate,
-            rateDate: movieuser.updateDate
-        }
+    private async getNameAndTitle(movieUsers: IMovieUser[]): Promise<MovieRate[]> {
+        const userIds = movieUsers.map(mu => mu.userId);
+        const users = await this.userService.find(userIds);
+        const movieIds = movieUsers.map(mu => mu.movieId);
+        const movies = await this.movieService.find(movieIds);
+        const result = movieUsers.map(mu => ({
+            movieId: mu.movieId,
+            userId: mu.userId,
+            movieTitle: movies.filter(m => m._id.toString() == mu.movieId)[0]?.title,
+            userName: users.filter(u => u._id.toString() == mu.userId)[0]?.username,
+            rate: mu.rate,
+            rateDate: mu.updateDate
+        }));
+        return result;
     }
 
     async findRecent(): Promise<GetRecentRatesResponse> {
         const re: IMovieUser[] = await this.getAll();
-        //TODO sort based on rate date
         re.slice(0, 9);
-        const movieRateWithNames = await Promise.all(re.map(mu => this.getNameAndTitle(mu)));
-        if (re)
+        if (!re)
             return {
-                result: GetRecentRatesResponseResult.success,
-                movies: movieRateWithNames,
-                me: null
-            }
-        else
-            return {
-                result: GetRecentRatesResponseResult.fail,
+                result: GetRecentRatesResponseResult.noMovie,
                 movies: [],
-                me: null
             }
-    }
-
-    async findRecentExtra(id: string): Promise<GetRecentRatesResponse> {
-        const re = await this.findRecent();
-        const sug = await this.suggest(id);
+        const movieRateWithNames = await this.getNameAndTitle(re);
+        const movieRateWithNamesSorted = movieRateWithNames.sort((a, b) => a.rateDate > b.rateDate ? -1 : 1);
+        if (!movieRateWithNamesSorted)
+            return {
+                result: GetRecentRatesResponseResult.noMovie,
+                movies: [],
+            }
         return {
-            result: re.result,
-            movies: re.movies,
-            me: null
+            result: GetRecentRatesResponseResult.success,
+            movies: movieRateWithNamesSorted,
         }
     }
 
-    async suggest(id: string): Promise<MovieRate[]> {
-        return [];
+    async findRecentExtra(id: string): Promise<GetRecentRatesForSignedResponse> {
+        const re = await this.findRecent();
+        if (re.result === GetRecentRatesResponseResult.noMovie)
+            return {
+                result: GetRecentRatesForSignedResponseResult.noMovie,
+                movies: [],
+                suggests: []
+            }
+        const sug = await this.suggest(id);
+        if (!sug || sug.length < 1)
+            return {
+                result: GetRecentRatesForSignedResponseResult.noSuggest,
+                movies: re.movies,
+                suggests: []
+            }
+        return {
+            result: GetRecentRatesForSignedResponseResult.success,
+            movies: re.movies,
+            suggests: sug
+        }
+    }
+
+    async suggest(userId: string): Promise<MovieSuggest[]> {
+        const user: IUser = (await this.userService.find([userId]))[0];
+        const allMovieUsers = await this.movieuserModel.find({ userId: { $in: user.buddies.map(b => b.buddyId) } });
+        const allMovieSuggest: MovieSuggest[] = [];
+        allMovieUsers.forEach(mu => {
+            const i = allMovieSuggest.findIndex(a => a.movieId == mu.movieId);
+            if (i >= 0) {
+                allMovieSuggest[i].rates.push(mu.rate);
+            }
+            else {
+                allMovieSuggest.push({
+                    movieId: mu.movieId,
+                    movieTitle: "",
+                    rates: [(mu.rate - 2) * (user.buddies.filter(b => b.buddyId.toString() == mu.userId)[0].rate - 2)],
+                    likeability: 0
+                });
+            }
+        });
+        const movies: IMovie[] = await this.movieService.find(allMovieSuggest.map(m => m.movieId));
+        const preResult: MovieSuggest[] = allMovieSuggest.map(m => ({
+            movieId: m.movieId,
+            movieTitle: movies.filter(n => n._id.toString() == m.movieId)[0].title,
+            rates: m.rates,
+            likeability: this.calculateLikeability(m.rates)
+        }));
+        return preResult.filter(r => r.likeability > 80);
     }
 
     async delete(id: string) {
@@ -347,7 +390,7 @@ export class MovieUserService {
             result: UpdateMovieRateResponseResult.success,
             movieuser: {
                 movieId: updated.movieId,
-                movieTitle: (await (await this.movieService.find(updated.movieId)).title),
+                movieTitle: (await (await this.movieService.find([updated.movieId]))[0].title),
                 userId: updated.userId,
                 userName: (await this.userService.find([updated.userId]))[0].username,
                 rate: updated.rate,
@@ -393,5 +436,11 @@ export class MovieUserService {
                 buddies: userInfo.user.buddies,
                 me: userInfo.user
             }
+    }
+
+    private calculateLikeability(rates: number[]): number {
+        const sum = rates.reduce((a, b) => a + b, 0);
+        const percent = (Math.sqrt(((sum / rates.length) + 4) * 12.5)) * 10;
+        return percent;
     }
 }

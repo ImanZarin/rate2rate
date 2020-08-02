@@ -1,10 +1,9 @@
-import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { UserService } from "src/users/users.service";
 import { JwtService } from '@nestjs/jwt';
 import { IUser } from "src/users/user.model";
 import { LoginUserResponse } from "src/shared/apiTypes";
 import { LoginUserResponseResult } from "src/shared/result.enums";
-import { UserRate } from "src/shared/dto.models";
 
 
 @Injectable()

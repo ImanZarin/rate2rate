@@ -50,7 +50,7 @@ export enum SearchMovieResponseResult {
 
 export enum GetRecentRatesResponseResult {
     success = "SUCCESS",
-    fail = "FAIL"
+    noMovie = "EMPTY_LIST"
 }
 
 export enum GetProfileInfoResponseResult {
@@ -59,4 +59,10 @@ export enum GetProfileInfoResponseResult {
     noBuddy = "EMPTY_BUDDY_LIST",
     noMovienoBuddy = "EMPTY_BOTH_LIST",
     noUser = "USER_NOT_FOUND"
+}
+
+export enum GetRecentRatesForSignedResponseResult{
+    noMovie = "EMPTY_MOVIE_LIST",
+    success = "SUCCESS",
+    noSuggest = "EMPTY_SUGGEST_LIST"
 }

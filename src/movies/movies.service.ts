@@ -1,7 +1,7 @@
 import { Injectable, HttpService } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { IMovie, IMDBsearch, IMDBmovie } from './movie.model';
-import { Model, Document } from 'mongoose';
+import { Model } from 'mongoose';
 import { SearchMovieResponse } from 'src/shared/apiTypes';
 import { SearchMovieResponseResult } from 'src/shared/result.enums';
 //import { Observable } from 'rxjs/internal/Observable';
@@ -50,8 +50,8 @@ export class MovieService {
             return null;
     }
 
-    async find(id: string): Promise<IMovie> {
-        const result = await this.movieModel.findById(id);
+    async find(ids: string[]): Promise<IMovie[]> {
+        const result = await this.movieModel.find({ _id: { $in: ids } });
         return result;
     }
 

@@ -3,11 +3,11 @@ import { MovieUserService } from './movieusers.service';
 import { IMovieUser } from './movieusers.model';
 import {
     GetUserInfoResponse, GetUserInfoForSignedResponse, GetMovieInfoResponse,
-    GetMovieInfoForSignedResponse, UpdateMovieRateResponse, GetProfileInfoResponse, GetRecentRatesResponse
+    GetMovieInfoForSignedResponse, UpdateMovieRateResponse, GetProfileInfoResponse, GetRecentRatesResponse, GetRecentRatesForSignedResponse
 } from 'src/shared/apiTypes';
 import { JwtAuthOptionalGuard } from '../auth/jwt-auth-optional.guard';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { GetProfileInfoResponseResult } from 'src/shared/result.enums';
+import { GetProfileInfoResponseResult, UpdateMovieRateResponseResult } from 'src/shared/result.enums';
 
 @Controller('movieusers')
 export class MovieUserController {
@@ -45,7 +45,7 @@ export class MovieUserController {
     @UseGuards(JwtAuthOptionalGuard)
     @Get('home')
     async getHomeInfo(
-        @Request() req): Promise<GetRecentRatesResponse> {
+        @Request() req): Promise<GetRecentRatesResponse | GetRecentRatesForSignedResponse> {
         if (req.user.userId)
             return await this.muService.findRecentExtra(req.user.userId);
         else
@@ -79,7 +79,10 @@ export class MovieUserController {
             return await this.muService.update(iMovieUser._id, r);
         }
         else {
-            return await this.muService.create(req.user.userId, r, m);
+            return {
+                result: UpdateMovieRateResponseResult.movieuserNotFound,
+                movieuser: null
+            }
         }
     }
 
