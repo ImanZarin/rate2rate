@@ -1,5 +1,5 @@
 import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, LoginUserResponseResult, 
-    UpdateBuddyResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult, UpdateMovieRateResponseResult, SearchMovieResponseResult, GetProfileInfoResponseResult } from "./result.enums";
+    UpdateBuddyResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult, UpdateMovieRateResponseResult, SearchMovieResponseResult, GetProfileInfoResponseResult, GetRecentRatesResponseResult } from "./result.enums";
 import { IMDBsearch } from "../movies/movie.model";
 import { MovieRate, UserRate, User, Movie } from "./dto.models";
 
@@ -54,5 +54,11 @@ export interface GetProfileInfoResponse {
     result: GetProfileInfoResponseResult,
     movies: MovieRate[],
     buddies: UserRate[],
+    me: User
+}
+
+export interface GetRecentRatesResponse {
+    result: GetRecentRatesResponseResult,
+    movies: MovieRate[]
     me: User
 }
