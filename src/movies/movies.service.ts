@@ -2,7 +2,7 @@ import { Injectable, HttpService } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { IMovie, IMDBsearch, IMDBmovie } from './movie.model';
 import { Model, Document } from 'mongoose';
-import { SearchMovieResponse } from 'src/apiTypes';
+import { SearchMovieResponse } from 'src/shared/apiTypes';
 import { SearchMovieResponseResult } from 'src/shared/result.enums';
 //import { Observable } from 'rxjs/internal/Observable';
 //import 'rxjs/add/operator/toPromise';
@@ -31,7 +31,8 @@ export class MovieService {
             genre: genre,
             cast: cast,
             director: directors,
-            imdbId: imdbId
+            imdbId: imdbId,
+            insertDate: (new Date()).toISOString()
         });
         const result = await newMovie.save();
         return result;
@@ -131,6 +132,7 @@ export class MovieService {
             updated.genre = genre;
         if (cast)
             updated.cast = cast;
+        updated.updateDate = (new Date()).toISOString();
         updated.save();
         return updated as IMovie;
     }

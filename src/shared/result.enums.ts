@@ -17,16 +17,16 @@ export enum LoginUserResponseResult {
     repetedEmail = "EMAIL_ALREADY_EXIST"
 }
 
-export enum UpdateBodyResponseResult {
+export enum UpdateBuddyResponseResult {
     success = "SUCCESS",
     userNotFound = "USER_NOT_FOUND",
-    userIsBody = "USER_SAME_AS_BODY",
+    userIsBuddy = "USER_SAME_AS_BUDDY",
 
 }
 
 export enum GetMovieInfoResponseResult {
     success = "SUCCESS",
-    movieNotFound = "USER_NOT_FOUND",
+    movieNotFound = "MOVIE_NOT_FOUND",
     listEmpty = "EMPTY_LIST",
 }
 
@@ -34,6 +34,7 @@ export enum GetMovieInfoForSignedResponseResult {
     success = "SUCCESS",
     movieNotFound = "USER_NOT_FOUND",
     listEmpty = "EMPTY_LIST",
+    userFake = "User_NOT_RECOGNIZED"
 }
 
 export enum UpdateMovieRateResponseResult {
@@ -50,4 +51,12 @@ export enum SearchMovieResponseResult {
 export enum GetRecentRatesResponseResult {
     success = "SUCCESS",
     fail = "FAIL"
+}
+
+export enum GetProfileInfoResponseResult {
+    success = "SUCCESS",
+    noMovie = "EMPTY_MOVIE_LIST",
+    noBuddy = "EMPTY_BUDDY_LIST",
+    noMovienoBuddy = "EMPTY_BOTH_LIST",
+    noUser = "USER_NOT_FOUND"
 }

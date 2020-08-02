@@ -2,7 +2,7 @@ import { Controller, Get, Put, Body, Param, Delete, UseGuards, Post } from '@nes
 import { MovieService } from './movies.service';
 import { IMovie, IMDBsearch } from './movie.model';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { SearchMovieResponse } from 'src/apiTypes';
+import { SearchMovieResponse } from 'src/shared/apiTypes';
 
 @Controller('movies')
 export class MovieController {

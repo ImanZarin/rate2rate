@@ -2,8 +2,9 @@ import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
 import { UserService } from "src/users/users.service";
 import { JwtService } from '@nestjs/jwt';
 import { IUser } from "src/users/user.model";
-import { LoginUserResponse } from "src/apiTypes";
+import { LoginUserResponse } from "src/shared/apiTypes";
 import { LoginUserResponseResult } from "src/shared/result.enums";
+import { UserRate } from "src/shared/dto.models";
 
 
 @Injectable()
@@ -30,14 +31,18 @@ export class AuthService {
     private async getJwtToken(email: string, id: string): Promise<LoginUserResponse> {
         const payload = { username: email, sub: id };
         const mUser: IUser = (await this.userService.find([id]))[0];
-        if (mUser) {
+        if (mUser)
             return {
                 result: LoginUserResponseResult.success,
                 // eslint-disable-next-line @typescript-eslint/camelcase
                 accessToken: this.jwtService.sign(payload),
-                user: mUser
+                user: {
+                    id: mUser._id,
+                    email: mUser.email,
+                    username: mUser.username,
+                    buddies: []
+                }
             };
-        }
         else
             return {
                 result: LoginUserResponseResult.userNotFound,

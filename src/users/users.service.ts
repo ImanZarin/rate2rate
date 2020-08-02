@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { IUser, IBody } from './user.model';
+import { IUser, IBuddy } from './user.model';
 import { Model } from 'mongoose';
 import passport = require('passport');
-import { UpdateBodyResponse } from 'src/apiTypes';
-import { UpdateBodyResponseResult } from 'src/shared/result.enums';
+import { UpdateBuddyResponse } from 'src/shared/apiTypes';
+import { UpdateBuddyResponseResult } from 'src/shared/result.enums';
+import { UserRate, User } from 'src/shared/dto.models';
 
 @Injectable()
 export class UserService {
@@ -28,7 +29,8 @@ export class UserService {
                 email: email,
                 admin: false,
                 bodies: [],
-                password: pass
+                password: pass,
+                insertDate: (new Date()).toISOString()
             });
             const savedUser: IUser = await newUser.save();
             passport.authenticate('local');
@@ -63,46 +65,69 @@ export class UserService {
         return result;
     }
 
-    async updateCreateBody(userId: string, newBodyId: string, rate: number): Promise<UpdateBodyResponse> {
+    async getUserDTO(user: IUser): Promise<User> {
+        const buddies = await this.find(user.buddies.map(a => a.buddyId));
+        const buddiesRated = buddies.map(b => ({
+            userId: user.id,
+            userName: user.username,
+            buddyId: b._id,
+            rate: user.buddies.filter(c => c.buddyId.toString() === b._id.toString())[0].rate,
+            buddyName: b.username,
+            rateDate: user.buddies.filter(c => c.buddyId.toString() === b._id.toString())[0].rateDate,
+        }));
+        const buddiesRatedSorted = buddiesRated.sort((a, b) => a.rateDate > b.rateDate ? -1 : 1);
+        return {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                buddies: buddiesRatedSorted
+            }
+    }
+
+    async updateCreateBuddy(userId: string, newBuddyId: string, rate: number): Promise<UpdateBuddyResponse> {
         const user = await this.userModel.findById(userId);
         if (user == null) {
             return {
-                result: UpdateBodyResponseResult.userNotFound,
+                result: UpdateBuddyResponseResult.userNotFound,
                 user: null
             }
         }
-        if ((user as IUser)._id == newBodyId) {
-            return {
-                result: UpdateBodyResponseResult.userIsBody,
-                user: user
+        if (user._id == newBuddyId) 
+            return{
+                result: UpdateBuddyResponseResult.userIsBuddy,
+                user: await this.getUserDTO(user)
             }
-        }
-        const body = (user as IUser).bodies.filter(x => x.bodyUserId === newBodyId)[0];
-        const index = (user as IUser).bodies.indexOf(body);
-        if (body) {
-            (user as IUser).bodies[index].rate = rate;
+        const buddy = (user as IUser).buddies.filter(x => x.buddyId === newBuddyId)[0];
+        const index = (user as IUser).buddies.indexOf(buddy);
+        if (buddy) {
+            (user as IUser).buddies[index].rate = rate;
+            (user as IUser).buddies[index].rateDate = (new Date()).toISOString();
         }
         else {
-            const newBody: IBody = {
+            const newBuddy: IBuddy = {
                 rate: rate,
-                bodyUserId: newBodyId
+                buddyId: newBuddyId,
+                rateDate: (new Date()).toISOString()
             };
-            (user as IUser).bodies.push(newBody);
+            (user as IUser).buddies.push(newBuddy);
         };
-        user.markModified("bodies");
+        user.updateDate = (new Date()).toISOString();
+        user.markModified("buddies");
         user.save();
         return {
-            result: UpdateBodyResponseResult.success,
-            user: user
+            result: UpdateBuddyResponseResult.success,
+            user: await this.getUserDTO(user)
         }
     }
 
-    async deleteBodies(id: string): Promise<IUser> {
+    async deleteBuddies(id: string): Promise<IUser> {
         const user = await this.userModel.findById(id);
         if (user) {
-            user.bodies = [];
+            user.buddies = [];
+            user.markModified("buddies");
             user.save();
         }
         return user;
     }
+
 }

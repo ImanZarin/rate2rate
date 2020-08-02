@@ -159,7 +159,7 @@ describe('users', () => {
         expect(r.n).toBe(1);
     })
 
-    it('updateCreateBody', async () => {
+    it('updateCreateBuddy', async () => {
         const app = await Test.createTestingModule({
             providers: [
                 {
@@ -170,7 +170,7 @@ describe('users', () => {
                             username: "srk",
                             email: "test@yahoo.com",
                             admin: false,
-                            bodies: [{ bodyUserId: "001", rate: 1 }, { bodyUserId: "002", rate: 2 }],
+                            bodies: [{ buddyUserId: "001", rate: 1 }, { buddyUserId: "002", rate: 2 }],
                             save: () => { }
                         })
                     },
@@ -179,9 +179,9 @@ describe('users', () => {
             ]
         }).compile();
         const mService = app.get(UserService);
-        const r = await mService.updateCreateBody("5eb10b521852d65394a418da", "003", 3);
+        const r = await mService.updateCreateBuddy("5eb10b521852d65394a418da", "003", 3);
         expect(r.user.username).toBe("srk");
-        expect(r.user.bodies).toEqual([{ bodyUserId: "001", rate: 1 }, { bodyUserId: "002", rate: 2 }, { bodyUserId: "003", rate: 3 }]);
-        expect(r.user.bodies.length).toBe(3);
+        expect(r.user.buddies).toEqual([{ buddyUserId: "001", rate: 1 }, { buddyUserId: "002", rate: 2 }, { bodyUserId: "003", rate: 3 }]);
+        expect(r.user.buddies.length).toBe(3);
     })
 })

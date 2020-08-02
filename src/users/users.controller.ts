@@ -1,47 +1,40 @@
-import { Controller, Get, Put, Body, Param, Delete, UseGuards, Request, Post } from '@nestjs/common';
+import { Controller, Get, Put, Body, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { UserService } from './users.service';
 import { IUser } from './user.model';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { UpdateBodyResponse } from 'src/apiTypes';
+import { UpdateBuddyResponse } from 'src/shared/apiTypes';
 
 @Controller('users')
 export class UserController {
     constructor(private readonly userService: UserService) { }
 
+    //TODO admin guard
     @Get()
     async getAll(): Promise<IUser[]> {
         return await this.userService.getAll();
     }
 
-    // @Put()
-    // async search(
-    //     @Body('username') f: string,
-    //     @Body('lastname') l: string
-    // ): Promise<string> {
-    //     let id: string = await this.userService.search(f, l);
-    //     if (id)
-    //         return id;
-    // }
-
+    //TODO admin guard
     @Delete(':id')
     async delete(@Param('id') id: string): Promise<{ ok?: number; n?: number; } & { deletedCount?: number; }> {
         return await this.userService.delete(id);
     }
 
-    @Delete(':id/bodies')
+    //TODO admin guard
+    @Delete(':id/buddies')
     async deleteBodies(@Param('id') id: string): Promise<IUser> {
-        return await this.userService.deleteBodies(id);
+        return await this.userService.deleteBuddies(id);
     }
 
 
     @UseGuards(JwtAuthGuard)
     @Put(':id')
-    async updateCreateBody(
+    async updateCreateBuddy(
         @Request() req,
-        @Param('id') bodyId: string,
+        @Param('id') buddyId: string,
         @Body('rate') r: number,
-    ): Promise<UpdateBodyResponse> {
-        return await this.userService.updateCreateBody(req.user.userId, bodyId, r);
+    ): Promise<UpdateBuddyResponse> {
+        return await this.userService.updateCreateBuddy(req.user.userId, buddyId, r);
     }
 
 

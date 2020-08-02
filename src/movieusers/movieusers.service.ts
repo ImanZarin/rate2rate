@@ -1,17 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { IMovieUser } from './movieusers.model';
-import { Model, Document } from 'mongoose';
+import { Model } from 'mongoose';
 import { IMovie } from 'src/movies/movie.model';
-import { GetUserInfoResponse, MovieRate, GetUserInfoForSignedResponse, GetMovieInfoResponse, UserRate, GetMovieInfoForSignedResponse, UpdateMovieRateResponse, GetRecentRatesResponse, MovieUserNames } from 'src/apiTypes';
+import { GetUserInfoResponse, GetUserInfoForSignedResponse, GetMovieInfoResponse, GetMovieInfoForSignedResponse, UpdateMovieRateResponse, GetProfileInfoResponse, GetRecentRatesResponse } from 'src/shared/apiTypes';
 import { UserService } from '../users/users.service';
 import { MovieService } from 'src/movies/movies.service';
-import { IUser, IBody } from 'src/users/user.model';
-import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult, UpdateMovieRateResponseResult, GetRecentRatesResponseResult } from 'src/shared/result.enums';
-import { async } from 'rxjs/internal/scheduler/async';
+import { IUser } from 'src/users/user.model';
+import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult, UpdateMovieRateResponseResult, GetProfileInfoResponseResult, GetRecentRatesResponseResult } from 'src/shared/result.enums';
+import { MovieRate } from 'src/shared/dto.models';
 
 @Injectable()
 export class MovieUserService {
+
     constructor(@InjectModel('MovieUser') private readonly movieuserModel: Model<IMovieUser>,
         private readonly movieService: MovieService,
         private readonly userService: UserService
@@ -24,15 +25,25 @@ export class MovieUserService {
     }
 
     async create(user: string, rate: number, movie: string): Promise<UpdateMovieRateResponse> {
+        const now = new Date();
         const newMovieUser = new this.movieuserModel({
             userId: user,
             movieId: movie,
-            rate: rate
+            rate: rate,
+            insertDate: now.toISOString(),
+            updateDate: now.toISOString()
         });
         const res = await newMovieUser.save();
         return {
             result: UpdateMovieRateResponseResult.success,
-            movieuser: res
+            movieuser: {
+                movieId: res.movieId,
+                movieTitle: await (await this.movieService.find(movie)).title,
+                userId: res.userId,
+                userName: await (await this.userService.find([user]))[0].username,
+                rate: rate,
+                rateDate: res.updateDate
+            }
         };
     }
 
@@ -41,7 +52,7 @@ export class MovieUserService {
         return result;
     }
 
-    async findForUser(id: string): Promise<GetUserInfoResponse> {
+    async findMoviesForUser(id: string): Promise<GetUserInfoResponse> {
         const idList: IMovieUser[] = await this.movieuserModel.find({ userId: id });
         const user: IUser = (await this.userService.find([id]))[0];
         if (!user) {
@@ -54,63 +65,87 @@ export class MovieUserService {
         if (idList.length < 1) {
             return {
                 result: GetUserInfoResponseResult.listEmpty,
-                user: user,
+                user: {
+                    username: user.username,
+                    id: user._id,
+                    email: user.email,
+                    buddies: await (await this.userService.getUserDTO(user)).buddies
+                },
                 movies: []
             }
         }
         const moviesT: IMovie[] = await this.findUserMovies(idList.map(a => a.movieId.toString()));
-        const ratedMovies: MovieRate[] = [];
-        for (const m of moviesT) {
-            const r = idList.find(mu => mu.movieId.toString() == m._id.toString()).rate;
-            ratedMovies.push({
-                _id: m._id,
-                title: m.title,
-                year: m.year,
-                rate: r
-            });
-        }
+        const ratedMovies: MovieRate[] = moviesT.map(m => ({
+            movieId: m._id,
+            movieTitle: m.title,
+            userName: user.username,
+            userId: user._id,
+            rate: idList.filter(mu => mu.movieId.toString() == m._id.toString())[0].rate,
+            rateDate: idList.filter(mu => mu.movieId.toString() == m._id.toString())[0].updateDate
+        }));
         if (ratedMovies.length < 1) {
             return {
                 result: GetUserInfoResponseResult.listEmpty,
-                user: user,
+                user: {
+                    username: user.username,
+                    id: user._id,
+                    email: user.email,
+                    buddies: []
+                },
                 movies: []
             }
         }
+        ratedMovies.sort((a, b) => a.rateDate > b.rateDate ? -1 : 1);
         return {
             result: GetUserInfoResponseResult.success,
-            user: user,
+            user: {
+                username: user.username,
+                id: user._id,
+                email: user.email,
+                buddies: []
+            },
             movies: ratedMovies
         }
     }
 
-    async findForUserExtra(id: string, signedName: string): Promise<GetUserInfoForSignedResponse> {
-        const re1: GetUserInfoResponse = await this.findForUser(id);
-        let _rate = 0;
+    async findMoviesForUserExtra(id: string, signedName: string): Promise<GetUserInfoForSignedResponse> {
+        const re1: GetUserInfoResponse = await this.findMoviesForUser(id);
         if (re1.result == GetUserInfoResponseResult.userNotFound) {
             return {
                 result: GetUserInfoForSignedResponseResult.userNotFound,
                 user: null,
                 movies: [],
-                rate: _rate
+                buddy: null
             }
         }
         const signedUser: IUser = await this.userService.searchEmail(signedName);
-        const _body: IBody = signedUser.bodies.filter(x => x.bodyUserId == id)[0];
-        if (_body)
-            _rate = _body.rate;
         if (re1.result == GetUserInfoResponseResult.listEmpty) {
             return {
                 result: GetUserInfoForSignedResponseResult.listEmpty,
                 user: re1.user,
                 movies: [],
-                rate: _rate
+                buddy: {
+                    userId: signedUser._id,
+                    userName: signedUser.username,
+                    buddyId: re1.user.id,
+                    buddyName: re1.user.username,
+                    rate: signedUser.buddies.filter(x => x.buddyId == re1.user.id)[0].rate,
+                    rateDate: signedUser.buddies.filter(x => x.buddyId == re1.user.id)[0].rateDate
+                }
             }
         }
         return {
             result: GetUserInfoForSignedResponseResult.success,
             user: re1.user,
             movies: re1.movies,
-            rate: _rate
+            buddy: {
+                userId: signedUser._id,
+                userName: signedUser.username,
+                buddyId: re1.user.id,
+                buddyName: re1.user.username,
+                rate: signedUser.buddies.filter(x => x.buddyId == re1.user.id)[0].rate,
+                rateDate: signedUser.buddies.filter(x => x.buddyId == re1.user.id)[0].rateDate
+            }
         }
     }
 
@@ -127,65 +162,107 @@ export class MovieUserService {
         if (idList.length < 1) {
             return {
                 result: GetMovieInfoResponseResult.listEmpty,
-                movie: movie,
+                movie: {
+                    actors: movie.cast,
+                    director: movie.director,
+                    genre: movie.genre,
+                    poster: movie.imageUrl,
+                    title: movie.title,
+                    year: movie.year,
+                    plot: movie.brief
+                },
                 users: []
             }
         }
         const usersT: IUser[] = await this.userService.find(idList.map(a => a.userId.toString()));
-        const userRated: UserRate[] = [];
-        for (const u of usersT) {
-            const r = idList.find(mu => mu.userId.toString() == u._id.toString()).rate;
-            userRated.push({
-                _id: u._id,
-                name: u.username,
-                rate: r
-            });
-        }
+        const userRated: MovieRate[] = usersT.map(u => ({
+            userId: u._id,
+            userName: u.username,
+            movieId: movie._id,
+            movieTitle: movie.title,
+            rate: idList.find(mu => mu.userId.toString() == u._id.toString()).rate,
+            rateDate: idList.find(mu => mu.userId.toString() == u._id.toString()).updateDate
+        }));
         if (userRated.length < 1) {
             return {
                 result: GetMovieInfoResponseResult.listEmpty,
-                movie: movie,
+                movie: {
+                    actors: movie.cast,
+                    director: movie.director,
+                    genre: movie.genre,
+                    poster: movie.imageUrl,
+                    title: movie.title,
+                    year: movie.year,
+                    plot: movie.brief
+                },
                 users: []
             }
         }
         return {
             result: GetMovieInfoResponseResult.success,
-            movie: movie,
+            movie: {
+                actors: movie.cast,
+                director: movie.director,
+                genre: movie.genre,
+                poster: movie.imageUrl,
+                title: movie.title,
+                year: movie.year,
+                plot: movie.brief
+            },
             users: userRated
         }
     }
 
-    async findForMovieExtra(id: string, signedName: string): Promise<GetMovieInfoForSignedResponse> {
+    async findForMovieExtra(id: string, signedId: string): Promise<GetMovieInfoForSignedResponse> {
         const re1: GetMovieInfoResponse = await this.findForMovie(id);
-        let _rate = 0;
         if (re1.result == GetMovieInfoResponseResult.movieNotFound) {
             return {
                 result: GetMovieInfoForSignedResponseResult.movieNotFound,
                 movie: null,
                 users: [],
-                rate: _rate
+                myRate: null
             }
         }
-        const signedUser = await this.userService.searchEmail(signedName);
+        const signedUser: IUser = await this.userService.find([signedId])[0];
+        if (!signedUser)
+            return {
+                result: GetMovieInfoForSignedResponseResult.userFake,
+                movie: re1.movie,
+                users: [],
+                myRate: null
+            }
         const signedUserRate: IMovieUser = await this.search(signedUser._id, id);
-        let updatedUsers: UserRate[] = re1.users;
-        if (signedName && signedUserRate) {
-            _rate = signedUserRate.rate;
-            updatedUsers = re1.users.filter(u => u._id.toString() != signedUser._id.toString());
+        let updatedUsers: MovieRate[] = re1.users;
+        if (signedId && signedUserRate) {
+            updatedUsers = re1.users.filter(u => u.userId.toString() != signedUser._id.toString());
         }
         if (re1.result == GetMovieInfoResponseResult.listEmpty || updatedUsers.length < 1) {
             return {
                 result: GetMovieInfoForSignedResponseResult.listEmpty,
                 movie: re1.movie,
                 users: [],
-                rate: _rate
+                myRate: {
+                    userName: signedUser.username,
+                    userId: signedUser._id,
+                    movieId: id,
+                    movieTitle: re1.movie.title,
+                    rate: signedUserRate.rate,
+                    rateDate: signedUserRate.updateDate
+                }
             }
         }
         return {
             result: GetMovieInfoForSignedResponseResult.success,
             movie: re1.movie,
             users: updatedUsers,
-            rate: _rate
+            myRate: {
+                userName: signedUser.username,
+                userId: signedUser._id,
+                movieId: id,
+                movieTitle: re1.movie.title,
+                rate: signedUserRate.rate,
+                rateDate: signedUserRate.updateDate
+            }
         }
     }
 
@@ -199,33 +276,34 @@ export class MovieUserService {
         return result[0];
     }
 
-    private async getNameAndTitle(movieuser: IMovieUser): Promise<MovieUserNames>{
-        return{
+    private async getNameAndTitle(movieuser: IMovieUser): Promise<MovieRate> {
+        return {
             movieId: movieuser.movieId,
             userId: movieuser.userId,
             movieTitle: (await this.movieService.find(movieuser.movieId)).title,
             userName: (await this.userService.find([movieuser.userId]))[0].username,
-            rate: movieuser.rate
+            rate: movieuser.rate,
+            rateDate: movieuser.updateDate
         }
     }
 
     async findRecent(): Promise<GetRecentRatesResponse> {
         const re: IMovieUser[] = await this.getAll();
         //TODO sort based on rate date
-        re.slice(0,9);
+        re.slice(0, 9);
         const movieRateWithNames = await Promise.all(re.map(mu => this.getNameAndTitle(mu)));
-        if(re)
-        return {
-            result: GetRecentRatesResponseResult.success,
-            movies: movieRateWithNames,
-            suggestions: []
-        }
+        if (re)
+            return {
+                result: GetRecentRatesResponseResult.success,
+                movies: movieRateWithNames,
+                me: null
+            }
         else
-        return {
-            result: GetRecentRatesResponseResult.fail,
-            movies: [],
-            suggestions: []
-        }
+            return {
+                result: GetRecentRatesResponseResult.fail,
+                movies: [],
+                me: null
+            }
     }
 
     async findRecentExtra(id: string): Promise<GetRecentRatesResponse> {
@@ -234,11 +312,11 @@ export class MovieUserService {
         return {
             result: re.result,
             movies: re.movies,
-            suggestions: sug
+            me: null
         }
     }
 
-    async suggest(id: string): Promise<MovieUserNames[]> {
+    async suggest(id: string): Promise<MovieRate[]> {
         return [];
     }
 
@@ -260,12 +338,60 @@ export class MovieUserService {
                 result: UpdateMovieRateResponseResult.movieuserNotFound,
                 movieuser: null
             }
-        if (rate)
+        if (rate) {
             updated.rate = rate;
+            updated.updateDate = (new Date()).toISOString();
+        }
         updated.save();
         return {
             result: UpdateMovieRateResponseResult.success,
-            movieuser: updated
+            movieuser: {
+                movieId: updated.movieId,
+                movieTitle: (await (await this.movieService.find(updated.movieId)).title),
+                userId: updated.userId,
+                userName: (await this.userService.find([updated.userId]))[0].username,
+                rate: updated.rate,
+                rateDate: updated.updateDate
+            }
         }
+    }
+
+    async getProfileInfo(userId: string): Promise<GetProfileInfoResponse> {
+        const userInfo = await this.findMoviesForUser(userId);
+        if (userInfo.result == GetUserInfoResponseResult.userNotFound)
+            return {
+                result: GetProfileInfoResponseResult.noUser,
+                movies: [],
+                buddies: [],
+                me: null
+            }
+        if (userInfo.user.buddies.length < 1 && userInfo.result == GetUserInfoResponseResult.listEmpty)
+            return {
+                result: GetProfileInfoResponseResult.noMovienoBuddy,
+                movies: [],
+                buddies: [],
+                me: userInfo.user
+            }
+        if (userInfo.user.buddies.length < 1)
+            return {
+                result: GetProfileInfoResponseResult.noBuddy,
+                movies: userInfo.movies,
+                buddies: [],
+                me: userInfo.user
+            }
+        if (userInfo.result == GetUserInfoResponseResult.listEmpty)
+            return {
+                result: GetProfileInfoResponseResult.noMovie,
+                movies: [],
+                buddies: userInfo.user.buddies,
+                me: userInfo.user
+            }
+        if (userInfo.result == GetUserInfoResponseResult.success)
+            return {
+                result: GetProfileInfoResponseResult.success,
+                movies: userInfo.movies,
+                buddies: userInfo.user.buddies,
+                me: userInfo.user
+            }
     }
 }
