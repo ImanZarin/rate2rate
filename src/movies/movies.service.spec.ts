@@ -41,7 +41,7 @@ describe('movies', () => {
             ]
         }).compile();
         const mService = app.get(MovieService);
-        const r = await mService.create('', 1968, null, null, [], []);
+        const r = await mService.create('', 1968, null, null, [], [], [], "");
         expect(r).toBe("5eb10b521852d65394a418da");
     })
 
@@ -64,7 +64,7 @@ describe('movies', () => {
             ]
         }).compile();
         const mService = app.get(MovieService);
-        const r = await mService.find("5eb10b521852d65394a418da");
+        const r = await mService.find(["5eb10b521852d65394a418da"])[0];
         expect(r._id).toBe("5eb10b521852d65394a418da");
     })
 
@@ -87,7 +87,7 @@ describe('movies', () => {
             ]
         }).compile();
         const mService = app.get(MovieService);
-        const r = await mService.search("kal ho na ho", 2009);
+        const r = await mService.searchDBWithName("kal ho na ho", 2009);
         expect(r).toBe("5eb10b521852d65394a418da");
     })
 
