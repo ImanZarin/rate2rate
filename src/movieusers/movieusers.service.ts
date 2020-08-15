@@ -39,6 +39,7 @@ export class MovieUserService {
             movieuser: {
                 movieId: res.movieId,
                 movieTitle: await (await this.movieService.find([movie]))[0].title,
+                movieImg: await (await this.movieService.find([movie]))[0].imageUrl,
                 userId: res.userId,
                 userName: await (await this.userService.find([user]))[0].username,
                 rate: rate,
@@ -78,6 +79,7 @@ export class MovieUserService {
         const ratedMovies: MovieRate[] = moviesT.map(m => ({
             movieId: m._id,
             movieTitle: m.title,
+            movieImg: m.imageUrl,
             userName: user.username,
             userId: user._id,
             rate: idList.filter(mu => mu.movieId.toString() == m._id.toString())[0].rate,
@@ -119,6 +121,21 @@ export class MovieUserService {
             }
         }
         const signedUser: IUser = await this.userService.searchEmail(signedName);
+        if (id == signedUser.id) {
+            return {
+                result: GetUserInfoForSignedResponseResult.userHimself,
+                user: re1.user,
+                movies: [],
+                buddy: {
+                    userId: signedUser._id,
+                    userName: signedUser.username,
+                    buddyId: re1.user.id,
+                    buddyName: re1.user.username,
+                    rate: 0,
+                    rateDate: ""
+                }
+            }
+        }
         if (re1.result == GetUserInfoResponseResult.listEmpty) {
             return {
                 result: GetUserInfoForSignedResponseResult.listEmpty,
@@ -151,7 +168,7 @@ export class MovieUserService {
 
     async findForMovie(id: string): Promise<GetMovieInfoResponse> {
         const idList: IMovieUser[] = await this.movieuserModel.find({ movieId: id });
-        const movie: IMovie = await this.movieService.find([id])[0];
+        const movie: IMovie = (await this.movieService.find([id]))[0];
         if (!movie) {
             return {
                 result: GetMovieInfoResponseResult.movieNotFound,
@@ -180,6 +197,7 @@ export class MovieUserService {
             userName: u.username,
             movieId: movie._id,
             movieTitle: movie.title,
+            movieImg: movie.imageUrl,
             rate: idList.find(mu => mu.userId.toString() == u._id.toString()).rate,
             rateDate: idList.find(mu => mu.userId.toString() == u._id.toString()).updateDate
         }));
@@ -223,7 +241,7 @@ export class MovieUserService {
                 myRate: null
             }
         }
-        const signedUser: IUser = await this.userService.find([signedId])[0];
+        const signedUser: IUser = (await this.userService.find([signedId]))[0];
         if (!signedUser)
             return {
                 result: GetMovieInfoForSignedResponseResult.userFake,
@@ -246,6 +264,7 @@ export class MovieUserService {
                     userId: signedUser._id,
                     movieId: id,
                     movieTitle: re1.movie.title,
+                    movieImg: re1.movie.poster,
                     rate: signedUserRate.rate,
                     rateDate: signedUserRate.updateDate
                 }
@@ -260,6 +279,7 @@ export class MovieUserService {
                 userId: signedUser._id,
                 movieId: id,
                 movieTitle: re1.movie.title,
+                movieImg: re1.movie.poster,
                 rate: signedUserRate.rate,
                 rateDate: signedUserRate.updateDate
             }
@@ -285,6 +305,7 @@ export class MovieUserService {
             movieId: mu.movieId,
             userId: mu.userId,
             movieTitle: movies.filter(m => m._id.toString() == mu.movieId)[0]?.title,
+            movieImg: movies.filter(m => m._id.toString() == mu.movieId)[0]?.imageUrl,
             userName: users.filter(u => u._id.toString() == mu.userId)[0]?.username,
             rate: mu.rate,
             rateDate: mu.updateDate
@@ -348,6 +369,7 @@ export class MovieUserService {
                 allMovieSuggest.push({
                     movieId: mu.movieId,
                     movieTitle: "",
+                    movieImg: "",
                     rates: [(mu.rate - 2) * (user.buddies.filter(b => b.buddyId.toString() == mu.userId)[0].rate - 2)],
                     likeability: 0
                 });
@@ -357,6 +379,7 @@ export class MovieUserService {
         const preResult: MovieSuggest[] = allMovieSuggest.map(m => ({
             movieId: m.movieId,
             movieTitle: movies.filter(n => n._id.toString() == m.movieId)[0].title,
+            movieImg: movies.filter(n => n._id.toString() == m.movieId)[0].imageUrl,
             rates: m.rates,
             likeability: this.calculateLikeability(m.rates)
         }));
@@ -391,6 +414,7 @@ export class MovieUserService {
             movieuser: {
                 movieId: updated.movieId,
                 movieTitle: (await (await this.movieService.find([updated.movieId]))[0].title),
+                movieImg: (await (await this.movieService.find([updated.movieId]))[0].imageUrl),
                 userId: updated.userId,
                 userName: (await this.userService.find([updated.userId]))[0].username,
                 rate: updated.rate,

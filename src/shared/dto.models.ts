@@ -2,6 +2,7 @@
 export type MovieRate = {
     movieTitle: string;
     movieId: string;
+    movieImg: string;
     rate: number;
     rateDate: string;
     userName: string;
@@ -37,6 +38,7 @@ export type User = {
 export type MovieSuggest = {
     movieId: string;
     movieTitle: string;
+    movieImg: string;
     rates: number[];
     likeability: number;
 }

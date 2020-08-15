@@ -9,6 +9,7 @@ export enum GetUserInfoForSignedResponseResult {
     success = "SUCCESS",
     userNotFound = "USER_NOT_FOUND",
     listEmpty = "EMPTY_LIST",
+    userHimself = "USER_IS_HIMSELF"
 }
 
 export enum LoginUserResponseResult {
