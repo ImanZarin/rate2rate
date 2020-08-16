@@ -39,6 +39,6 @@ export type MovieSuggest = {
     movieId: string;
     movieTitle: string;
     movieImg: string;
-    rates: number[];
+    weightedRates: number[];
     likeability: number;
 }

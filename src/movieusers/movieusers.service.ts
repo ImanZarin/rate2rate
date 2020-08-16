@@ -232,57 +232,103 @@ export class MovieUserService {
     }
 
     async findForMovieExtra(id: string, signedId: string): Promise<GetMovieInfoForSignedResponse> {
-        const re1: GetMovieInfoResponse = await this.findForMovie(id);
-        if (re1.result == GetMovieInfoResponseResult.movieNotFound) {
+        const signedUser: IUser = (await this.userService.find([signedId]))[0];
+        if (!signedUser || !signedId)
+            return {
+                result: GetMovieInfoForSignedResponseResult.userFake,
+                movie: null,
+                users: [],
+                myRate: null,
+                myLikebility: 0
+            };
+        const idList: IMovieUser[] = await this.movieuserModel.find({ movieId: id, userId: { $in: signedUser.buddies.map(b => b.buddyId) } });
+        const movie: IMovie = (await this.movieService.find([id]))[0];
+        if (!movie) {
             return {
                 result: GetMovieInfoForSignedResponseResult.movieNotFound,
                 movie: null,
                 users: [],
-                myRate: null
+                myRate: null,
+                myLikebility: 0
             }
         }
-        const signedUser: IUser = (await this.userService.find([signedId]))[0];
-        if (!signedUser)
+        const usersT: IUser[] = await this.userService.find(idList.map(a => a.userId.toString()));
+        const userRated: MovieRate[] = usersT.map(u => ({
+            userId: u._id,
+            userName: u.username,
+            movieId: movie._id,
+            movieTitle: movie.title,
+            movieImg: movie.imageUrl,
+            rate: idList.find(mu => mu.userId.toString() == u._id.toString()).rate,
+            rateDate: idList.find(mu => mu.userId.toString() == u._id.toString()).updateDate
+        }));
+        const signedUserRate: IMovieUser = await this.movieuserModel.findOne({ movieId: id, userId: signedId });
+        if (!signedUserRate)
             return {
-                result: GetMovieInfoForSignedResponseResult.userFake,
-                movie: re1.movie,
-                users: [],
-                myRate: null
+                result: GetMovieInfoForSignedResponseResult.noRate,
+                movie: {
+                    actors: movie.cast,
+                    director: movie.director,
+                    genre: movie.genre,
+                    poster: movie.imageUrl,
+                    title: movie.title,
+                    year: movie.year,
+                    plot: movie.brief
+                },
+                users: userRated,
+                myRate: null,
+                myLikebility: this.calculateLikeability(userRated.map(a => this.getWeightedRate(idList.filter(mu => mu.userId.toString() == a.userId.toString())[0], signedUser)))
             }
-        const signedUserRate: IMovieUser = await this.search(signedUser._id, id);
-        let updatedUsers: MovieRate[] = re1.users;
-        if (signedId && signedUserRate) {
-            updatedUsers = re1.users.filter(u => u.userId.toString() != signedUser._id.toString());
+        else {
+            userRated.filter(u => u.userId.toString() != signedId);
         }
-        if (re1.result == GetMovieInfoResponseResult.listEmpty || updatedUsers.length < 1) {
+        if (userRated.length < 1) {
             return {
                 result: GetMovieInfoForSignedResponseResult.listEmpty,
-                movie: re1.movie,
+                movie: {
+                    actors: movie.cast,
+                    director: movie.director,
+                    genre: movie.genre,
+                    poster: movie.imageUrl,
+                    title: movie.title,
+                    year: movie.year,
+                    plot: movie.brief
+                },
                 users: [],
                 myRate: {
                     userName: signedUser.username,
                     userId: signedUser._id,
                     movieId: id,
-                    movieTitle: re1.movie.title,
-                    movieImg: re1.movie.poster,
+                    movieTitle: movie.title,
+                    movieImg: movie.imageUrl,
                     rate: signedUserRate.rate,
                     rateDate: signedUserRate.updateDate
-                }
+                },
+                myLikebility: 0
             }
         }
         return {
             result: GetMovieInfoForSignedResponseResult.success,
-            movie: re1.movie,
-            users: updatedUsers,
+            movie: {
+                actors: movie.cast,
+                director: movie.director,
+                genre: movie.genre,
+                poster: movie.imageUrl,
+                title: movie.title,
+                year: movie.year,
+                plot: movie.brief
+            },
             myRate: {
                 userName: signedUser.username,
                 userId: signedUser._id,
                 movieId: id,
-                movieTitle: re1.movie.title,
-                movieImg: re1.movie.poster,
+                movieTitle: movie.title,
+                movieImg: movie.imageUrl,
                 rate: signedUserRate.rate,
                 rateDate: signedUserRate.updateDate
-            }
+            },
+            users: userRated,
+            myLikebility: this.calculateLikeability(userRated.map(a => this.getWeightedRate(idList.filter(mu => mu.userId.toString() == a.userId.toString())[0], signedUser)))
         }
     }
 
@@ -363,14 +409,14 @@ export class MovieUserService {
         allMovieUsers.forEach(mu => {
             const i = allMovieSuggest.findIndex(a => a.movieId == mu.movieId);
             if (i >= 0) {
-                allMovieSuggest[i].rates.push(mu.rate);
+                allMovieSuggest[i].weightedRates.push(this.getWeightedRate(mu, user));
             }
             else {
                 allMovieSuggest.push({
                     movieId: mu.movieId,
                     movieTitle: "",
                     movieImg: "",
-                    rates: [(mu.rate - 2) * (user.buddies.filter(b => b.buddyId.toString() == mu.userId)[0].rate - 2)],
+                    weightedRates: [this.getWeightedRate(mu, user)],
                     likeability: 0
                 });
             }
@@ -380,8 +426,8 @@ export class MovieUserService {
             movieId: m.movieId,
             movieTitle: movies.filter(n => n._id.toString() == m.movieId)[0].title,
             movieImg: movies.filter(n => n._id.toString() == m.movieId)[0].imageUrl,
-            rates: m.rates,
-            likeability: this.calculateLikeability(m.rates)
+            weightedRates: m.weightedRates,
+            likeability: this.calculateLikeability(m.weightedRates)
         }));
         return preResult.filter(r => r.likeability > 80);
     }
@@ -466,5 +512,9 @@ export class MovieUserService {
         const sum = rates.reduce((a, b) => a + b, 0);
         const percent = (Math.sqrt(((sum / rates.length) + 4) * 12.5)) * 10;
         return percent;
+    }
+
+    private getWeightedRate(mu: IMovieUser, user: IUser): number {
+        return (mu.rate - 2) * (user.buddies.filter(b => b.buddyId.toString() == mu.userId)[0]?.rate - 2);
     }
 }

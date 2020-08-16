@@ -35,7 +35,8 @@ export enum GetMovieInfoForSignedResponseResult {
     success = "SUCCESS",
     movieNotFound = "USER_NOT_FOUND",
     listEmpty = "EMPTY_LIST",
-    userFake = "User_NOT_RECOGNIZED"
+    userFake = "User_NOT_RECOGNIZED",
+    noRate = "USER_HAS_NOT_RATED"
 }
 
 export enum UpdateMovieRateResponseResult {

@@ -38,6 +38,7 @@ export interface GetMovieInfoForSignedResponse {
     movie: Movie,
     users: MovieRate[],
     myRate: MovieRate
+    myLikebility: number
 }
 
 export interface UpdateMovieRateResponse {
