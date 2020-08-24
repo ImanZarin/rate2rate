@@ -77,11 +77,11 @@ export class UserService {
         }));
         const buddiesRatedSorted = buddiesRated.sort((a, b) => a.rateDate > b.rateDate ? -1 : 1);
         return {
-                id: user._id,
-                username: user.username,
-                email: user.email,
-                buddies: buddiesRatedSorted
-            }
+            id: user._id,
+            username: user.username,
+            email: user.email,
+            buddies: buddiesRatedSorted
+        }
     }
 
     async updateCreateBuddy(userId: string, newBuddyId: string, rate: number): Promise<UpdateBuddyResponse> {
@@ -92,8 +92,8 @@ export class UserService {
                 user: null
             }
         }
-        if (user._id == newBuddyId) 
-            return{
+        if (user._id == newBuddyId)
+            return {
                 result: UpdateBuddyResponseResult.userIsBuddy,
                 user: await this.getUserDTO(user)
             }
@@ -128,6 +128,19 @@ export class UserService {
             user.save();
         }
         return user;
+    }
+
+    async searchAll(search: string): Promise<User[]> {
+        //no name is less than 4 character
+        if (search.length < 3)
+            return [];
+        const r: IUser[] = await this.userModel.find({ $text: { $search: search } });
+        return r.map(res => ({
+            id: res._id,
+            username: res.username,
+            email: res.email,
+            buddies: []
+        }));
     }
 
 }

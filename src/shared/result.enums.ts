@@ -44,9 +44,11 @@ export enum UpdateMovieRateResponseResult {
     movieuserNotFound = "MOVIEUSER_NOT_FOUND"
 }
 
-export enum SearchMovieResponseResult {
+export enum SearchResponseResult {
     success = "SUCCESS",
-    listEmpty = "EMPTY_LIST",
+    bothEmpty = "EMPTY_LISTS",
+    noMovie = "NO_MOVIE",
+    noUser = "NO_USER",
     failed = "FAIL"
 }
 

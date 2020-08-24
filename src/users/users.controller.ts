@@ -3,6 +3,7 @@ import { UserService } from './users.service';
 import { IUser } from './user.model';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UpdateBuddyResponse } from 'src/shared/apiTypes';
+import { User } from 'src/shared/dto.models';
 
 @Controller('users')
 export class UserController {
@@ -35,6 +36,13 @@ export class UserController {
         @Body('rate') r: number,
     ): Promise<UpdateBuddyResponse> {
         return await this.userService.updateCreateBuddy(req.user.userId, buddyId, r);
+    }
+
+    @Get('/search')
+    async searchAll(
+        @Body('search') search: string
+    ): Promise<User[]> {
+        return await this.userService.searchAll(search);
     }
 
 

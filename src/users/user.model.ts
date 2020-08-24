@@ -40,12 +40,14 @@ export const UserSchema: Schema = new Schema({
     username: {
         type: String,
         default: "",
-        required: false
+        required: false,
+        index: true
     },
     email: {
         type: String,
         default: "",
-        required: true
+        required: true,
+        index: true
     },
     admin: {
         type: Boolean,

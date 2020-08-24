@@ -1,5 +1,5 @@
 export class Constants {
-    static minMovieYear = 1970;
+    static minMovieYear = 1800;
     static maxMovieYear = 2025;
     static minMovieRate = 1;
     static maxMovieRate = 5;

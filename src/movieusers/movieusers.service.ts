@@ -3,15 +3,16 @@ import { InjectModel } from '@nestjs/mongoose';
 import { IMovieUser } from './movieusers.model';
 import { Model } from 'mongoose';
 import { IMovie } from 'src/movies/movie.model';
-import { GetUserInfoResponse, GetUserInfoForSignedResponse, GetMovieInfoResponse, GetMovieInfoForSignedResponse, UpdateMovieRateResponse, GetProfileInfoResponse, GetRecentRatesResponse, GetRecentRatesForSignedResponse } from 'src/shared/apiTypes';
+import { GetUserInfoResponse, GetUserInfoForSignedResponse, GetMovieInfoResponse, GetMovieInfoForSignedResponse, UpdateMovieRateResponse, GetProfileInfoResponse, GetRecentRatesResponse, GetRecentRatesForSignedResponse, SearchResponse } from 'src/shared/apiTypes';
 import { UserService } from '../users/users.service';
 import { MovieService } from 'src/movies/movies.service';
 import { IUser } from 'src/users/user.model';
-import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult, UpdateMovieRateResponseResult, GetProfileInfoResponseResult, GetRecentRatesResponseResult, GetRecentRatesForSignedResponseResult } from 'src/shared/result.enums';
-import { MovieRate, MovieSuggest } from 'src/shared/dto.models';
+import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult, UpdateMovieRateResponseResult, GetProfileInfoResponseResult, GetRecentRatesResponseResult, GetRecentRatesForSignedResponseResult, SearchResponseResult } from 'src/shared/result.enums';
+import { MovieRate, MovieSuggest, User } from 'src/shared/dto.models';
 
 @Injectable()
 export class MovieUserService {
+
 
     constructor(@InjectModel('MovieUser') private readonly movieuserModel: Model<IMovieUser>,
         private readonly movieService: MovieService,
@@ -146,8 +147,8 @@ export class MovieUserService {
                     userName: signedUser.username,
                     buddyId: re1.user.id,
                     buddyName: re1.user.username,
-                    rate: signedUser.buddies.filter(x => x.buddyId == re1.user.id)[0].rate,
-                    rateDate: signedUser.buddies.filter(x => x.buddyId == re1.user.id)[0].rateDate
+                    rate: signedUser.buddies.filter(x => x.buddyId == re1.user.id)[0]?.rate,
+                    rateDate: signedUser.buddies.filter(x => x.buddyId == re1.user.id)[0]?.rateDate
                 }
             }
         }
@@ -160,8 +161,8 @@ export class MovieUserService {
                 userName: signedUser.username,
                 buddyId: re1.user.id,
                 buddyName: re1.user.username,
-                rate: signedUser.buddies.filter(x => x.buddyId == re1.user.id)[0].rate,
-                rateDate: signedUser.buddies.filter(x => x.buddyId == re1.user.id)[0].rateDate
+                rate: signedUser.buddies.filter(x => x.buddyId == re1.user.id)[0]?.rate,
+                rateDate: signedUser.buddies.filter(x => x.buddyId == re1.user.id)[0]?.rateDate
             }
         }
     }
@@ -198,8 +199,8 @@ export class MovieUserService {
             movieId: movie._id,
             movieTitle: movie.title,
             movieImg: movie.imageUrl,
-            rate: idList.find(mu => mu.userId.toString() == u._id.toString()).rate,
-            rateDate: idList.find(mu => mu.userId.toString() == u._id.toString()).updateDate
+            rate: idList.find(mu => mu.userId.toString() == u._id.toString())?.rate,
+            rateDate: idList.find(mu => mu.userId.toString() == u._id.toString())?.updateDate
         }));
         if (userRated.length < 1) {
             return {
@@ -342,6 +343,41 @@ export class MovieUserService {
         return result[0];
     }
 
+    async searchWord(word: string): Promise<SearchResponse> {
+        const r1: User[] = await this.userService.searchAll(word);
+        const r2: SearchResponse = await this.movieService.searchEverywhere(word);
+        switch (r2.result) {
+            case SearchResponseResult.failed:
+                return r2;
+            case SearchResponseResult.noMovie:
+                if (r1.length < 1)
+                    return {
+                        result: SearchResponseResult.bothEmpty,
+                        movies: [],
+                        users: []
+                    }
+                else
+                    return {
+                        result: SearchResponseResult.noMovie,
+                        movies: [],
+                        users: r1
+                    }
+            case SearchResponseResult.success:
+                if (r1.length < 1)
+                    return {
+                        result: SearchResponseResult.noUser,
+                        movies: r2.movies,
+                        users: []
+                    }
+                else
+                    return {
+                        result: SearchResponseResult.success,
+                        movies: r2.movies,
+                        users: r1
+                    }
+        }
+    }
+
     private async getNameAndTitle(movieUsers: IMovieUser[]): Promise<MovieRate[]> {
         const userIds = movieUsers.map(mu => mu.userId);
         const users = await this.userService.find(userIds);
@@ -360,23 +396,22 @@ export class MovieUserService {
     }
 
     async findRecent(): Promise<GetRecentRatesResponse> {
-        const re: IMovieUser[] = await this.getAll();
-        re.slice(0, 9);
+        const re: IMovieUser[] = await this.movieuserModel.find().sort({insertDate:1}).limit(10);
         if (!re)
             return {
                 result: GetRecentRatesResponseResult.noMovie,
                 movies: [],
             }
         const movieRateWithNames = await this.getNameAndTitle(re);
-        const movieRateWithNamesSorted = movieRateWithNames.sort((a, b) => a.rateDate > b.rateDate ? -1 : 1);
-        if (!movieRateWithNamesSorted)
+        //const movieRateWithNamesSorted = movieRateWithNames.sort((a, b) => a.rateDate > b.rateDate ? -1 : 1);
+        if (!movieRateWithNames)
             return {
                 result: GetRecentRatesResponseResult.noMovie,
                 movies: [],
             }
         return {
             result: GetRecentRatesResponseResult.success,
-            movies: movieRateWithNamesSorted,
+            movies: movieRateWithNames,
         }
     }
 
