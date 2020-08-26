@@ -1,6 +1,5 @@
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy as jStrategy, ExtractJwt } from 'passport-jwt';
-import { Constants } from "src/app.constants";
 
 export class JwtStrategy extends PassportStrategy(jStrategy) {
 
@@ -8,7 +7,7 @@ export class JwtStrategy extends PassportStrategy(jStrategy) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
-            secretOrKey: Constants.jwtConstants.secret,
+            secretOrKey: process.env.JWT_SECRET_KEY//Constants.jwtConstants.secret,
         });
     }
 

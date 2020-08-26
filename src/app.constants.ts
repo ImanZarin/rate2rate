@@ -9,7 +9,7 @@ export class Constants {
     'http://localhost:3005', 'https://localhost:3005'];
 
     static jwtConstants = {
-        secret: 'secretKey',
+        secret: process.env.JWT_SECRET_KEY,
         expiringTime: 2592000000//time is a month in miliseconds
       };
 }

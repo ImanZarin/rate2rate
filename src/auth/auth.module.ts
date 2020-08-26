@@ -1,4 +1,4 @@
-import { Module, forwardRef } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { UserModule } from "src/users/users.module";
 import { AuthService } from "./auth.service";
 import { PassportModule } from "@nestjs/passport";
@@ -9,12 +9,17 @@ import { JwtStrategy } from "./jwt.strategy";
 import { AuthController } from "./auth.controller";
 import { AnonymousStrategy } from "./anonymous.startegy";
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const config = require('../config');
+//console.log("mongo is: ",config.mongoUrl);
+const secret = config.secret;
+
 @Module({
     imports: [
         UserModule,
         PassportModule,
         JwtModule.register({
-            secret: Constants.jwtConstants.secret,
+            secret: secret,//Constants.jwtConstants.secret,
             signOptions: { expiresIn: Constants.jwtConstants.expiringTime },
         })],
     controllers: [AuthController],
