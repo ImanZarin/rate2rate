@@ -8,20 +8,25 @@ import { Constants } from "src/app.constants";
 import { JwtStrategy } from "./jwt.strategy";
 import { AuthController } from "./auth.controller";
 import { AnonymousStrategy } from "./anonymous.startegy";
+import { ConfigService, ConfigModule } from "@nestjs/config";
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const config = require('../config');
-//console.log("mongo is: ",config.mongoUrl);
-const secret = config.secret;
 
 @Module({
     imports: [
         UserModule,
         PassportModule,
-        JwtModule.register({
-            secret: secret,//Constants.jwtConstants.secret,
-            signOptions: { expiresIn: Constants.jwtConstants.expiringTime },
-        })],
+        ConfigModule,
+        JwtModule.registerAsync({
+            imports: [ConfigModule],
+            useFactory: async (configService: ConfigService) => ({
+                secret: configService.get<string>("JWT_SECRET_KEY"),
+                signOptions: {
+                    expiresIn: Constants.jwtConstants.expiringTime,
+                },
+            }),
+            inject: [ConfigService]
+        }),
+    ],
     controllers: [AuthController],
     providers: [AuthService, LocalStrategy, JwtStrategy, AnonymousStrategy],
     exports: [AuthService]

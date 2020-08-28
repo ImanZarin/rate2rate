@@ -7,17 +7,26 @@ import { MovieModule } from './movies/movies.module';
 import { UserModule } from './users/users.module';
 import { MovieUserModule } from './movieusers/movieuser.module';
 import { AuthModule } from './auth/auth.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 //import config from './config';
 
-const config = require('./config');
-//console.log("mongo is: ",config.mongoUrl);
-const url = config.mongoUrl;
+//const config = require('./config');
 
 @Module({
-  imports: [MongooseModule.forRoot(url),
-  ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.local' }),
-    MovieModule, UserModule, MovieUserModule, AuthModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.local' }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>("MONGO_URL"),
+      }),
+      inject: [ConfigService]
+    }),
+    MovieModule,
+    UserModule,
+    MovieUserModule,
+    AuthModule
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
