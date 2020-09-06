@@ -1,5 +1,8 @@
-import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, LoginUserResponseResult, 
-    UpdateBuddyResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult, UpdateMovieRateResponseResult, SearchMovieResponseResult, GetProfileInfoResponseResult, GetRecentRatesResponseResult, GetRecentRatesForSignedResponseResult } from "./result.enums";
+import {
+    GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, LoginUserResponseResult,
+    UpdateBuddyResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult,
+    UpdateMovieRateResponseResult, SearchResponseResult, GetProfileInfoResponseResult, GetRecentRatesResponseResult, GetRecentRatesForSignedResponseResult
+} from "./result.enums";
 import { IMDBsearch } from "../movies/movie.model";
 import { MovieRate, UserRate, User, Movie, MovieSuggest } from "./dto.models";
 
@@ -38,6 +41,7 @@ export interface GetMovieInfoForSignedResponse {
     movie: Movie,
     users: MovieRate[],
     myRate: MovieRate
+    myLikebility: number
 }
 
 export interface UpdateMovieRateResponse {
@@ -45,9 +49,10 @@ export interface UpdateMovieRateResponse {
     movieuser: MovieRate
 }
 
-export interface SearchMovieResponse {
-    result: SearchMovieResponseResult,
-    movies: IMDBsearch[]
+export interface SearchResponse {
+    result: SearchResponseResult,
+    movies: IMDBsearch[],
+    users: User[]
 }
 
 export interface GetProfileInfoResponse {

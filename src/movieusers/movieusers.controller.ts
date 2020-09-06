@@ -1,9 +1,9 @@
-import { Controller, Get, Put, Body, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Put, Body, Param, Delete, UseGuards, Request, Post } from '@nestjs/common';
 import { MovieUserService } from './movieusers.service';
 import { IMovieUser } from './movieusers.model';
 import {
     GetUserInfoResponse, GetUserInfoForSignedResponse, GetMovieInfoResponse,
-    GetMovieInfoForSignedResponse, UpdateMovieRateResponse, GetProfileInfoResponse, GetRecentRatesResponse, GetRecentRatesForSignedResponse
+    GetMovieInfoForSignedResponse, UpdateMovieRateResponse, GetProfileInfoResponse, GetRecentRatesResponse, GetRecentRatesForSignedResponse, SearchResponse
 } from 'src/shared/apiTypes';
 import { JwtAuthOptionalGuard } from '../auth/jwt-auth-optional.guard';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -50,6 +50,13 @@ export class MovieUserController {
             return await this.muService.findRecentExtra(req.user.userId);
         else
             return await this.muService.findRecent();
+    }
+
+    @Post('search')
+    async searchMovieUser(
+        @Body("search") word: string
+    ): Promise<SearchResponse> {
+        return await this.muService.searchWord(word);
     }
 
     @UseGuards(JwtAuthGuard)

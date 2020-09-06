@@ -1,0 +1,32 @@
+version: '3.7'
+services:
+    app-backend:
+        container_name: docker-node-mongo
+        restart: always
+        build: .
+        networks: 
+            - rate2rate
+        environment: 
+            - MONGO_URL=mongodb://mongo:27017/r2r
+            - BACKEND_PORT=3005
+            - JWT_SECRET_KEY=secretKey
+        ports: 
+            - '3005:3005'
+        links: 
+            - mongo
+        volumes: 
+            - ./src:/app/src
+            - ./node_modules:/app/node_modules
+        entrypoint: ["npm","run","start:dev"]
+    mongo:
+        container_name: mongo
+        image: mongo:4.2.9
+        volumes: 
+            - db-data:/data/db
+        networks: 
+            - rate2rate
+volumes: 
+    db-data:
+networks: 
+    rate2rate:
+        name: r2r

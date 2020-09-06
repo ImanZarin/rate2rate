@@ -2,8 +2,8 @@ import { Injectable, HttpService } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { IMovie, IMDBsearch, IMDBmovie } from './movie.model';
 import { Model } from 'mongoose';
-import { SearchMovieResponse } from 'src/shared/apiTypes';
-import { SearchMovieResponseResult } from 'src/shared/result.enums';
+import { SearchResponse } from 'src/shared/apiTypes';
+import { SearchResponseResult } from 'src/shared/result.enums';
 //import { Observable } from 'rxjs/internal/Observable';
 //import 'rxjs/add/operator/toPromise';
 //import { AxiosResponse } from '@nestjs/common/http/interfaces/axios.interfaces';
@@ -76,7 +76,7 @@ export class MovieService {
             return null;
     }
 
-    async searchEverywhere(text: string): Promise<SearchMovieResponse> {
+    async searchEverywhere(text: string): Promise<SearchResponse> {
         const mHeader = {
             'x-rapidapi-key': 'c521c136efmsh63f66c3f0814b1dp107323jsnc695b43ec769',
             'x-rapidapi-host': 'movie-database-imdb-alternative.p.rapidapi.com',
@@ -88,26 +88,30 @@ export class MovieService {
             .then((resp) => {
                 if (!resp)
                     return {
-                        result: SearchMovieResponseResult.failed,
-                        movies: null
+                        result: SearchResponseResult.failed,
+                        movies: [],
+                        users: []
                     }
                 const { data } = resp;
                 if ((data.Search as IMDBsearch[])?.length > 0)
                     return {
-                        result: SearchMovieResponseResult.success,
-                        movies: data.Search
+                        result: SearchResponseResult.success,
+                        movies: data.Search,
+                        users: []
                     };
                 else
                     return {
-                        result: SearchMovieResponseResult.listEmpty,
-                        movies: []
+                        result: SearchResponseResult.noMovie,
+                        movies: [],
+                        users: []
                     }
             })
             .catch(err => {
                 console.log("err is: ", err);
                 return {
-                    result: SearchMovieResponseResult.failed,
-                    movies: null
+                    result: SearchResponseResult.failed,
+                    movies: [],
+                    users: []
                 }
             })
     }
