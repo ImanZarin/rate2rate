@@ -1,7 +1,7 @@
-FROM node:alpine
-WORKDIR /rate2rate
+FROM node:12-alpine
+WORKDIR '/app'
 COPY package.json .
 RUN npm install
 COPY . .
 EXPOSE 3005
-CMD ["npm","start"]
+CMD ["npm","run","start:prod"]

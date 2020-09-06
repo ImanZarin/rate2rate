@@ -17,9 +17,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.local' }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>("MONGO_URL"),
-      }),
+      useFactory: async (configService: ConfigService) => {
+        console.log("teeeeeeeeeeeest");
+        return ({
+          uri: configService.get<string>("MONGO_URL"),
+        });
+      },
       inject: [ConfigService]
     }),
     MovieModule,
