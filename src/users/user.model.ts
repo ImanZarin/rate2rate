@@ -41,7 +41,7 @@ export const UserSchema: Schema = new Schema({
         type: String,
         default: "",
         required: false,
-        index: true
+        index: true,
     },
     email: {
         type: String,
@@ -72,7 +72,7 @@ export const UserSchema: Schema = new Schema({
         required: false
     }
 });
-
+UserSchema.index({ usename: "text", email: "text" });
 UserSchema.plugin(passportLocalMongoose);
 
 //module.exports = mongoose.model<IUser>('User', UserSchema);
