@@ -7,7 +7,7 @@ import {
 } from 'src/shared/apiTypes';
 import { JwtAuthOptionalGuard } from '../auth/jwt-auth-optional.guard';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { GetProfileInfoResponseResult, UpdateMovieRateResponseResult } from 'src/shared/result.enums';
+import { GetProfileInfoResponseResult } from 'src/shared/result.enums';
 
 @Controller('movieusers')
 export class MovieUserController {
@@ -86,10 +86,7 @@ export class MovieUserController {
             return await this.muService.update(iMovieUser._id, r);
         }
         else {
-            return {
-                result: UpdateMovieRateResponseResult.movieuserNotFound,
-                movieuser: null
-            }
+            return await this.muService.create(req.user.userId, r, m);
         }
     }
 

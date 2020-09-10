@@ -70,14 +70,14 @@ export class UserService {
         const buddiesRated = buddies.map(b => ({
             userId: user.id,
             userName: user.username,
-            buddyId: b._id,
+            buddyId: b._id.toString(),
             rate: user.buddies.filter(c => c.buddyId.toString() === b._id.toString())[0].rate,
             buddyName: b.username,
             rateDate: user.buddies.filter(c => c.buddyId.toString() === b._id.toString())[0].rateDate,
         }));
         const buddiesRatedSorted = buddiesRated.sort((a, b) => a.rateDate > b.rateDate ? -1 : 1);
         return {
-            id: user._id,
+            id: user._id.toString(),
             username: user.username,
             email: user.email,
             buddies: buddiesRatedSorted
@@ -92,7 +92,7 @@ export class UserService {
                 user: null
             }
         }
-        if (user._id == newBuddyId)
+        if (user._id.toString() == newBuddyId)
             return {
                 result: UpdateBuddyResponseResult.userIsBuddy,
                 user: await this.getUserDTO(user)
@@ -134,9 +134,11 @@ export class UserService {
         //no name is less than 4 character
         if (search.length < 3)
             return [];
+        await this.userModel.init();
         const r: IUser[] = await this.userModel.find({ $text: { $search: search } });
+        //const r: IUser[] = [];
         return r.map(res => ({
-            id: res._id,
+            id: res._id.toString(),
             username: res.username,
             email: res.email,
             buddies: []

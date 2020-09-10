@@ -69,7 +69,7 @@ export class MovieUserService {
                 result: GetUserInfoResponseResult.listEmpty,
                 user: {
                     username: user.username,
-                    id: user._id,
+                    id: user._id.toString(),
                     email: user.email,
                     buddies: await (await this.userService.getUserDTO(user)).buddies
                 },
@@ -78,11 +78,11 @@ export class MovieUserService {
         }
         const moviesT: IMovie[] = await this.findUserMovies(idList.map(a => a.movieId.toString()));
         const ratedMovies: MovieRate[] = moviesT.map(m => ({
-            movieId: m._id,
+            movieId: m._id.toString(),
             movieTitle: m.title,
             movieImg: m.imageUrl,
             userName: user.username,
-            userId: user._id,
+            userId: user._id.toString(),
             rate: idList.filter(mu => mu.movieId.toString() == m._id.toString())[0].rate,
             rateDate: idList.filter(mu => mu.movieId.toString() == m._id.toString())[0].updateDate
         }));
@@ -91,9 +91,9 @@ export class MovieUserService {
                 result: GetUserInfoResponseResult.listEmpty,
                 user: {
                     username: user.username,
-                    id: user._id,
+                    id: user._id.toString(),
                     email: user.email,
-                    buddies: []
+                    buddies: await (await this.userService.getUserDTO(user)).buddies
                 },
                 movies: []
             }
@@ -103,9 +103,9 @@ export class MovieUserService {
             result: GetUserInfoResponseResult.success,
             user: {
                 username: user.username,
-                id: user._id,
+                id: user._id.toString(),
                 email: user.email,
-                buddies: []
+                buddies: await (await this.userService.getUserDTO(user)).buddies
             },
             movies: ratedMovies
         }
@@ -128,7 +128,7 @@ export class MovieUserService {
                 user: re1.user,
                 movies: [],
                 buddy: {
-                    userId: signedUser._id,
+                    userId: signedUser._id.toString(),
                     userName: signedUser.username,
                     buddyId: re1.user.id,
                     buddyName: re1.user.username,
@@ -143,7 +143,7 @@ export class MovieUserService {
                 user: re1.user,
                 movies: [],
                 buddy: {
-                    userId: signedUser._id,
+                    userId: signedUser._id.toString(),
                     userName: signedUser.username,
                     buddyId: re1.user.id,
                     buddyName: re1.user.username,
@@ -157,7 +157,7 @@ export class MovieUserService {
             user: re1.user,
             movies: re1.movies,
             buddy: {
-                userId: signedUser._id,
+                userId: signedUser._id.toString(),
                 userName: signedUser.username,
                 buddyId: re1.user.id,
                 buddyName: re1.user.username,
@@ -194,9 +194,9 @@ export class MovieUserService {
         }
         const usersT: IUser[] = await this.userService.find(idList.map(a => a.userId.toString()));
         const userRated: MovieRate[] = usersT.map(u => ({
-            userId: u._id,
+            userId: u._id.toString(),
             userName: u.username,
-            movieId: movie._id,
+            movieId: movie._id.toString(),
             movieTitle: movie.title,
             movieImg: movie.imageUrl,
             rate: idList.find(mu => mu.userId.toString() == u._id.toString())?.rate,
@@ -255,9 +255,9 @@ export class MovieUserService {
         }
         const usersT: IUser[] = await this.userService.find(idList.map(a => a.userId.toString()));
         const userRated: MovieRate[] = usersT.map(u => ({
-            userId: u._id,
+            userId: u._id.toString(),
             userName: u.username,
-            movieId: movie._id,
+            movieId: movie._id.toString(),
             movieTitle: movie.title,
             movieImg: movie.imageUrl,
             rate: idList.find(mu => mu.userId.toString() == u._id.toString()).rate,
@@ -298,7 +298,7 @@ export class MovieUserService {
                 users: [],
                 myRate: {
                     userName: signedUser.username,
-                    userId: signedUser._id,
+                    userId: signedUser._id.toString(),
                     movieId: id,
                     movieTitle: movie.title,
                     movieImg: movie.imageUrl,
@@ -321,7 +321,7 @@ export class MovieUserService {
             },
             myRate: {
                 userName: signedUser.username,
-                userId: signedUser._id,
+                userId: signedUser._id.toString(),
                 movieId: id,
                 movieTitle: movie.title,
                 movieImg: movie.imageUrl,
@@ -339,8 +339,8 @@ export class MovieUserService {
     }
 
     async search(userId: string, movieId: string): Promise<IMovieUser> {
-        const result = await this.movieuserModel.find({ movieId: movieId, userId: userId });
-        return result[0];
+        const result = (await this.movieuserModel.find({ movieId: movieId, userId: userId }))[0];
+        return result;
     }
 
     async searchWord(word: string): Promise<SearchResponse> {
@@ -520,6 +520,7 @@ export class MovieUserService {
                 buddies: [],
                 me: userInfo.user
             }
+        console.log("my user info: ",userInfo);
         if (userInfo.user.buddies.length < 1)
             return {
                 result: GetProfileInfoResponseResult.noBuddy,
