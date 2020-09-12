@@ -5,7 +5,6 @@ export class Constants {
   static maxMovieRate = 5;
   static minBodyRate = 1;
   static maxBodyRate = 5;
-  static whiteList: string[] = ['http://localhost:3000'];
   static jwtConstants = {
     secret: process.env.JWT_SECRET_KEY,
     expiringTime: 2592000000//time is a month in miliseconds
