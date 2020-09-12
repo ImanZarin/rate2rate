@@ -8,7 +8,7 @@ express();
 
 const corsOptionsDelegate = (req, callback) => {
     let corsOption;
-    if (Constants.whiteList.indexOf(req.header('origin')) >= 0)
+    if (process.env.WHITE_LIST.split(' ').indexOf(req.header('origin')) >= 0)
         corsOption = { origin: true };
     else
         corsOption = { origin: false };

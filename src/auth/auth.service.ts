@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { IUser } from "src/users/user.model";
 import { LoginUserResponse } from "src/shared/apiTypes";
 import { LoginUserResponseResult } from "src/shared/result.enums";
+import { compare } from "bcrypt";
 
 
 @Injectable()
@@ -15,7 +16,9 @@ export class AuthService {
 
     async validateUser(email: string, pass: string): Promise<any> {
         const user = await this.userService.searchEmail(email);
-        if (user && (user.password === pass || user.password.length == 0)) {
+        const allowed: boolean = await compare(pass, user.password);
+        //if (user && (user.password === pass || user.password.length == 0)) {
+        if (user && allowed) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { password, ...result } = user;
             return result;

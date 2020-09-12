@@ -6,6 +6,7 @@ import passport = require('passport');
 import { UpdateBuddyResponse } from 'src/shared/apiTypes';
 import { UpdateBuddyResponseResult } from 'src/shared/result.enums';
 import { User } from 'src/shared/dto.models';
+import { hash } from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -24,12 +25,13 @@ export class UserService {
             _username = email;
         }
         if (!sameUserId) {
+            const hashedpass = await hash(pass, 10);
             const newUser = new this.userModel({
                 username: _username,
                 email: email,
                 admin: false,
                 bodies: [],
-                password: pass,
+                password: hashedpass,
                 insertDate: (new Date()).toISOString()
             });
             const savedUser: IUser = await newUser.save();
