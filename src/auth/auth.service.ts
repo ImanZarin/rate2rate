@@ -16,9 +16,11 @@ export class AuthService {
 
     async validateUser(email: string, pass: string): Promise<any> {
         const user = await this.userService.searchEmail(email);
+        if(!user)
+            return null;
         const allowed: boolean = await compare(pass, user.password);
         //if (user && (user.password === pass || user.password.length == 0)) {
-        if (user && allowed) {
+        if (allowed) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { password, ...result } = user;
             return result;
@@ -31,7 +33,7 @@ export class AuthService {
     }
 
     private async getJwtToken(email: string, id: string): Promise<LoginUserResponse> {
-        const payload = { username: email, sub: id };
+        const payload = { username: email.toLowerCase(), sub: id };
         const mUser: IUser = (await this.userService.find([id]))[0];
         if (mUser)
             return {
