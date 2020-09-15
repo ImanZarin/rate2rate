@@ -21,7 +21,7 @@ export class AuthController {
         @Body('password') p: string,
         @Body('usertag') u: string,
     ): Promise<LoginUserResponse> {
-        return this.authService.signup(e, p, u);
+        return this.authService.signup(e.toLowerCase(), p, u);
     }
 
 }

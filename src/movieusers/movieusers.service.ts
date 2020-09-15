@@ -396,7 +396,7 @@ export class MovieUserService {
     }
 
     async findRecent(): Promise<GetRecentRatesResponse> {
-        const re: IMovieUser[] = await this.movieuserModel.find().sort({insertDate:1}).limit(10);
+        const re: IMovieUser[] = await this.movieuserModel.find().sort({ insertDate: -1 }).limit(10);
         if (!re)
             return {
                 result: GetRecentRatesResponseResult.noMovie,
@@ -439,22 +439,25 @@ export class MovieUserService {
 
     async suggest(userId: string): Promise<MovieSuggest[]> {
         const user: IUser = (await this.userService.find([userId]))[0];
-        const allMovieUsers = await this.movieuserModel.find({ userId: { $in: user.buddies.map(b => b.buddyId) } });
+        const allMovieUsers = await this.movieuserModel.find({ userId: { $in: [...user.buddies.map(b => b.buddyId), userId] } });
         const allMovieSuggest: MovieSuggest[] = [];
         allMovieUsers.forEach(mu => {
-            const i = allMovieSuggest.findIndex(a => a.movieId == mu.movieId);
-            if (i >= 0) {
-                allMovieSuggest[i].weightedRates.push(this.getWeightedRate(mu, user));
+            if (allMovieUsers.findIndex(b => (b.movieId.toString() == mu.movieId) && (b.userId == userId)) <= 0) {
+                const i = allMovieSuggest.findIndex(a => a.movieId == mu.movieId);
+                if (i >= 0) {
+                    allMovieSuggest[i].weightedRates.push(this.getWeightedRate(mu, user));
+                }
+                else {
+                    allMovieSuggest.push({
+                        movieId: mu.movieId,
+                        movieTitle: "",
+                        movieImg: "",
+                        weightedRates: [this.getWeightedRate(mu, user)],
+                        likeability: 0
+                    });
+                }
             }
-            else {
-                allMovieSuggest.push({
-                    movieId: mu.movieId,
-                    movieTitle: "",
-                    movieImg: "",
-                    weightedRates: [this.getWeightedRate(mu, user)],
-                    likeability: 0
-                });
-            }
+
         });
         const movies: IMovie[] = await this.movieService.find(allMovieSuggest.map(m => m.movieId));
         const preResult: MovieSuggest[] = allMovieSuggest.map(m => ({
@@ -520,7 +523,7 @@ export class MovieUserService {
                 buddies: [],
                 me: userInfo.user
             }
-        console.log("my user info: ",userInfo);
+        console.log("my user info: ", userInfo);
         if (userInfo.user.buddies.length < 1)
             return {
                 result: GetProfileInfoResponseResult.noBuddy,
