@@ -22,7 +22,7 @@ export class MovieService {
     }
 
     async create(title: string, yr: number, brief: string, imgUrl: string, genre: string[], cast: string[],
-        directors: string[], imdbId: string): Promise<IMovie> {
+        directors: string[], imdbId: string, duration: number, release: string): Promise<IMovie> {
         const newMovie = new this.movieModel({
             title: title,
             year: yr,
@@ -32,7 +32,9 @@ export class MovieService {
             cast: cast,
             director: directors,
             imdbId: imdbId,
-            insertDate: (new Date()).toISOString()
+            insertDate: (new Date()).toISOString(),
+            duration: duration | 0,
+            release: release
         });
         const result = await newMovie.save();
         return result;
@@ -43,7 +45,8 @@ export class MovieService {
         if (imdbMovie) {
             const result = await this.create(imdbMovie.Title, imdbMovie.Year, imdbMovie.Plot,
                 imdbMovie.Poster, imdbMovie.Genre.split(","), imdbMovie.Actors.split(","),
-                imdbMovie.Director.split(","), imdbMovie.imdbID);
+                imdbMovie.Director.split(","), imdbMovie.imdbID, parseInt(imdbMovie.Runtime.split(" ")[0]),
+                new Date(imdbMovie.Released).toUTCString());
             return result._id as string;
         }
         else
@@ -96,7 +99,7 @@ export class MovieService {
                 if ((data.Search as IMDBsearch[])?.length > 0)
                     return {
                         result: SearchResponseResult.success,
-                        movies: data.Search,
+                        movies: (data.Search as IMDBsearch[]).sort((a, b) => b.Year - a.Year),
                         users: []
                     };
                 else

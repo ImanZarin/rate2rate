@@ -14,6 +14,8 @@ export interface IMovie extends Document {
     imdbId: string;
     insertDate: string;
     updateDate: string;
+    duration: number;
+    release: string | null;
 }
 
 export const MovieSchema = new mongoose.Schema({
@@ -54,6 +56,12 @@ export const MovieSchema = new mongoose.Schema({
     updateDate: {
         type: String,
         required: false
+    },
+    duration: {
+        type: Number
+    },
+    release: {
+        type: String
     }
 });
 

@@ -187,7 +187,9 @@ export class MovieUserService {
                     poster: movie.imageUrl,
                     title: movie.title,
                     year: movie.year,
-                    plot: movie.brief
+                    plot: movie.brief,
+                    duratin: movie.duration,
+                    release: movie.release
                 },
                 users: []
             }
@@ -212,7 +214,9 @@ export class MovieUserService {
                     poster: movie.imageUrl,
                     title: movie.title,
                     year: movie.year,
-                    plot: movie.brief
+                    plot: movie.brief,
+                    duratin: movie.duration,
+                    release: movie.release
                 },
                 users: []
             }
@@ -226,7 +230,9 @@ export class MovieUserService {
                 poster: movie.imageUrl,
                 title: movie.title,
                 year: movie.year,
-                plot: movie.brief
+                plot: movie.brief,
+                duratin: movie.duration,
+                release: movie.release
             },
             users: userRated
         }
@@ -274,7 +280,9 @@ export class MovieUserService {
                     poster: movie.imageUrl,
                     title: movie.title,
                     year: movie.year,
-                    plot: movie.brief
+                    plot: movie.brief,
+                    duratin: movie.duration,
+                    release: movie.release
                 },
                 users: userRated,
                 myRate: null,
@@ -293,7 +301,9 @@ export class MovieUserService {
                     poster: movie.imageUrl,
                     title: movie.title,
                     year: movie.year,
-                    plot: movie.brief
+                    plot: movie.brief,
+                    duratin: movie.duration,
+                    release: movie.release
                 },
                 users: [],
                 myRate: {
@@ -317,7 +327,9 @@ export class MovieUserService {
                 poster: movie.imageUrl,
                 title: movie.title,
                 year: movie.year,
-                plot: movie.brief
+                plot: movie.brief,
+                duratin: movie.duration,
+                release: movie.release
             },
             myRate: {
                 userName: signedUser.username,
@@ -443,7 +455,7 @@ export class MovieUserService {
         const allMovieSuggest: MovieSuggest[] = [];
         allMovieUsers.forEach(mu => {
             if (allMovieUsers.findIndex(b => (b.movieId.toString() == mu.movieId) && (b.userId == userId)) <= 0) {
-                const i = allMovieSuggest.findIndex(a => a.movieId == mu.movieId);
+                const i = allMovieSuggest.findIndex(a => a.movieId.toString() == mu.movieId.toString());
                 if (i >= 0) {
                     allMovieSuggest[i].weightedRates.push(this.getWeightedRate(mu, user));
                 }
@@ -554,6 +566,6 @@ export class MovieUserService {
     }
 
     private getWeightedRate(mu: IMovieUser, user: IUser): number {
-        return (mu.rate - 2) * (user.buddies.filter(b => b.buddyId.toString() == mu.userId)[0]?.rate - 2);
+        return (mu.rate - 3) * (user.buddies.filter(b => b.buddyId.toString() == mu.userId)[0]?.rate - 3);
     }
 }

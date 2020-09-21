@@ -26,6 +26,8 @@ export type Movie = {
     actors: string[];
     plot: string;
     poster: string;
+    duratin: number;
+    release: string;
 }
 
 export type User = {

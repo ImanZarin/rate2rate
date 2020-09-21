@@ -18,7 +18,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
-        console.log("teeeeeeeeeeeest");
         return ({
           uri: configService.get<string>("MONGO_URL"),
         });

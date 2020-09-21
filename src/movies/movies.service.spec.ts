@@ -41,7 +41,7 @@ describe('movies', () => {
             ]
         }).compile();
         const mService = app.get(MovieService);
-        const r = await mService.create('', 1968, null, null, [], [], [], "");
+        const r = await mService.create('', 1968, null, null, [], [], [], "", 0, new Date("28 Nov 2013").toUTCString());
         expect(r).toBe("5eb10b521852d65394a418da");
     })
 
