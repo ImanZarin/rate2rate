@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { IUser, IBuddy } from './user.model';
 import { Model } from 'mongoose';
 import passport = require('passport');
-import { UpdateBuddyResponse } from 'src/shared/apiTypes';
+import { LoginUserResponse, UpdateBuddyResponse } from 'src/shared/apiTypes';
 import { UpdateBuddyResponseResult } from 'src/shared/result.enums';
 import { User } from 'src/shared/dto.models';
 import { hash } from 'bcrypt';
@@ -18,22 +18,49 @@ export class UserService {
         return result;
     }
 
-    async create(email: string, pass: string, username: string): Promise<IUser> {
+    async create(email: string, pass?: string, username?: string, fbID?: string, gID?: string): Promise<IUser> {
         const sameUserId = await this.searchEmail(email);
         let _username = username;
         if (username.length == 0) {
             _username = email;
         }
         if (!sameUserId) {
-            const hashedpass = await hash(pass, 10);
-            const newUser = new this.userModel({
-                username: _username,
-                email: email,
-                admin: false,
-                bodies: [],
-                password: hashedpass,
-                insertDate: (new Date()).toISOString()
-            });
+            let newUser: IUser;
+            if (fbID) {
+                newUser = new this.userModel({
+                    username: _username,
+                    email: email,
+                    fbId: fbID,
+                    gId: null,
+                    admin: false,
+                    bodies: [],
+                    password: null,
+                    insertDate: (new Date()).toISOString()
+                });
+            }
+            else if (gID) {
+                newUser = new this.userModel({
+                    username: _username,
+                    email: email,
+                    fbId: null,
+                    gId: gID,
+                    admin: false,
+                    bodies: [],
+                    password: null,
+                    insertDate: (new Date()).toISOString()
+                });
+            }
+            else {
+                const hashedpass = await hash(pass, 10);
+                newUser = new this.userModel({
+                    username: _username,
+                    email: email,
+                    admin: false,
+                    bodies: [],
+                    password: hashedpass,
+                    insertDate: (new Date()).toISOString()
+                });
+            }
             const savedUser: IUser = await newUser.save();
             passport.authenticate('local');
             return savedUser;
@@ -60,6 +87,16 @@ export class UserService {
     async searchEmail(email: string): Promise<IUser> {
         const result = await this.userModel.findOne({ email: email });
         return result;
+    }
+
+    async searchFB(id: string): Promise<IUser> {
+        const user = await this.userModel.findOne({ fbId: id });
+        return user;
+    }
+
+    async searchGoogle(id: string): Promise<IUser> {
+        const user = await this.userModel.findOne({ gId: id });
+        return user;
     }
 
     async delete(id: string) {
@@ -120,6 +157,20 @@ export class UserService {
             result: UpdateBuddyResponseResult.success,
             user: await this.getUserDTO(user)
         }
+    }
+
+    async update(user: IUser, pass?: string, username?: string, fbID?: string, gID?: string): Promise<IUser> {
+        if (pass)
+            user.password = pass;
+        if (username)
+            user.username = username;
+        if (fbID)
+            user.fbId = fbID;
+        if (gID)
+            user.gId = gID;
+        user.updateDate = (new Date()).toISOString();
+        user.save();
+        return user;
     }
 
     async deleteBuddies(id: string): Promise<IUser> {

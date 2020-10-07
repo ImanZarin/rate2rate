@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { HttpModule, HttpService, Module } from "@nestjs/common";
 import { UserModule } from "src/users/users.module";
 import { AuthService } from "./auth.service";
 import { PassportModule } from "@nestjs/passport";
@@ -13,6 +13,7 @@ import { ConfigService, ConfigModule } from "@nestjs/config";
 
 @Module({
     imports: [
+        HttpModule,
         UserModule,
         PassportModule,
         ConfigModule,

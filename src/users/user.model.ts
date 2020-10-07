@@ -27,6 +27,8 @@ export interface IBuddy {
 
 export interface IUser extends Document {
     _id: string,
+    fbId: string,
+    gId: string,
     username: string;
     email: string;
     admin: boolean;
@@ -49,6 +51,12 @@ export const UserSchema: Schema = new Schema({
         required: true,
         index: true
     },
+    fbId: {
+        type: String
+    },
+    gId: {
+        type: String
+    },
     admin: {
         type: Boolean,
         default: false,
@@ -60,8 +68,7 @@ export const UserSchema: Schema = new Schema({
         required: false
     },
     password: {
-        type: String,
-        required: true
+        type: String    
     },
     insertDate: {
         type: String,

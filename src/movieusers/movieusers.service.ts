@@ -451,6 +451,8 @@ export class MovieUserService {
 
     async suggest(userId: string): Promise<MovieSuggest[]> {
         const user: IUser = (await this.userService.find([userId]))[0];
+        if (!user || user.buddies.length < 1)
+            return [];
         const allMovieUsers = await this.movieuserModel.find({ userId: { $in: [...user.buddies.map(b => b.buddyId), userId] } });
         const allMovieSuggest: MovieSuggest[] = [];
         allMovieUsers.forEach(mu => {
@@ -535,7 +537,6 @@ export class MovieUserService {
                 buddies: [],
                 me: userInfo.user
             }
-        console.log("my user info: ", userInfo);
         if (userInfo.user.buddies.length < 1)
             return {
                 result: GetProfileInfoResponseResult.noBuddy,

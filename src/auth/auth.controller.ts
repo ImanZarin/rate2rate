@@ -1,7 +1,8 @@
-import { Controller, UseGuards, Post, Request, Body } from "@nestjs/common";
+import { Controller, UseGuards, Post, Body, Get, Req } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { LocalAuthGuard } from "./local-auth.guard";
 import { LoginUserResponse } from "src/shared/apiTypes";
+import { Request } from "express";
 
 
 
@@ -11,7 +12,7 @@ export class AuthController {
 
     @UseGuards(LocalAuthGuard)
     @Post('/login')
-    async login(@Request() req): Promise<LoginUserResponse> {
+    async login(@Req() req: Request): Promise<LoginUserResponse> {
         return this.authService.login(req.user);
     }
 
@@ -21,7 +22,23 @@ export class AuthController {
         @Body('password') p: string,
         @Body('usertag') u: string,
     ): Promise<LoginUserResponse> {
-        return this.authService.signup(e.toLowerCase(), p, u);
+        return this.authService.signup(e.toLowerCase(), p, u, "", "");
+    }
+
+    @Post('/facebook')
+    async facebookAuth(
+        @Body("profile") profile: any,
+        @Body("token") token: string
+    ): Promise<LoginUserResponse> {
+        return this.authService.loginOrSignupFB(profile, token);
+    }
+
+    @Post('/google')
+    async googleAuth(
+        @Body("profile") profile: any,
+        @Body("token") token: string
+    ) {
+        return this.authService.loginOrSignupGoogle(profile, token);
     }
 
 }
