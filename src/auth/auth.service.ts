@@ -16,7 +16,7 @@ export class AuthService {
 
     async validateUser(email: string, pass: string): Promise<any> {
         const user = await this.userService.searchEmail(email);
-        if(!user)
+        if (!user)
             return null;
         const allowed: boolean = await compare(pass, user.password);
         //if (user && (user.password === pass || user.password.length == 0)) {
@@ -28,7 +28,10 @@ export class AuthService {
         return null;
     }
 
-    async login(user: any): Promise<LoginUserResponse> {
+    async login(user: any, notiftoken?: string): Promise<LoginUserResponse> {
+
+        if (notiftoken)
+            await this.userService.updateNotificationToken(user._doc._id, notiftoken);
         return await this.getJwtToken(user._doc.email, user._doc._id);
     }
 
@@ -57,8 +60,8 @@ export class AuthService {
 
     }
 
-    async signup(e: string, p: string, u: string): Promise<LoginUserResponse> {
-        const user: IUser = await this.userService.create(e, p, u);
+    async signup(e: string, p: string, u: string, n?: string): Promise<LoginUserResponse> {
+        const user: IUser = await this.userService.create(e, p, u, n);
         if (user)
             return await this.getJwtToken(user.email, user._id);
         else

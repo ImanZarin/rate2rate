@@ -18,7 +18,7 @@ export class UserService {
         return result;
     }
 
-    async create(email: string, pass: string, username: string): Promise<IUser> {
+    async create(email: string, pass: string, username: string, notiftoken?: string): Promise<IUser> {
         const sameUserId = await this.searchEmail(email);
         let _username = username;
         if (username.length == 0) {
@@ -32,6 +32,7 @@ export class UserService {
                 admin: false,
                 bodies: [],
                 password: hashedpass,
+                notiftoken: notiftoken,
                 insertDate: (new Date()).toISOString()
             });
             const savedUser: IUser = await newUser.save();
@@ -86,6 +87,12 @@ export class UserService {
         }
     }
 
+    async getUserBuddies(id: string): Promise<IUser[]> {
+        const user = await this.userModel.findById(id);
+        const buddies = await this.find(user.buddies.map(a => a.buddyId));
+        return buddies;
+    }
+
     async updateCreateBuddy(userId: string, newBuddyId: string, rate: number): Promise<UpdateBuddyResponse> {
         const user = await this.userModel.findById(userId);
         if (user == null) {
@@ -120,6 +127,17 @@ export class UserService {
             result: UpdateBuddyResponseResult.success,
             user: await this.getUserDTO(user)
         }
+    }
+
+    async updateNotificationToken(userId: string, notifToken: string): Promise<boolean> {
+        const user = await this.userModel.findById(userId);
+        if (user == null)
+            return false;
+        if (user.notiftoken.indexOf(notifToken) > 0)
+            return false;
+        user.notiftoken.push(notifToken);
+        user.save();
+        return true;
     }
 
     async deleteBuddies(id: string): Promise<IUser> {

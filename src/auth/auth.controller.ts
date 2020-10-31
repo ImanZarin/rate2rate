@@ -11,8 +11,10 @@ export class AuthController {
 
     @UseGuards(LocalAuthGuard)
     @Post('/login')
-    async login(@Request() req): Promise<LoginUserResponse> {
-        return this.authService.login(req.user);
+    async login(
+        @Request() req,
+        @Body('notif') notiftoken?: string): Promise<LoginUserResponse> {
+        return this.authService.login(req.user, notiftoken);
     }
 
     @Post('signup')
@@ -20,8 +22,9 @@ export class AuthController {
         @Body('username') e: string,
         @Body('password') p: string,
         @Body('usertag') u: string,
+        @Body('notif') n: string
     ): Promise<LoginUserResponse> {
-        return this.authService.signup(e.toLowerCase(), p, u);
+        return this.authService.signup(e.toLowerCase(), p, u, n);
     }
 
 }

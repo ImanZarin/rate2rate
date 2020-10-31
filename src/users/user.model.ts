@@ -32,6 +32,7 @@ export interface IUser extends Document {
     admin: boolean;
     buddies: IBuddy[];
     password: string;
+    notiftoken: string[];
     insertDate: string;
     updateDate: string;
 }
@@ -62,6 +63,9 @@ export const UserSchema: Schema = new Schema({
     password: {
         type: String,
         required: true
+    },
+    notiftoken: {
+        type: Array(String)
     },
     insertDate: {
         type: String,

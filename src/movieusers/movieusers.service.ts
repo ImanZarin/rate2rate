@@ -8,7 +8,8 @@ import { UserService } from '../users/users.service';
 import { MovieService } from 'src/movies/movies.service';
 import { IUser } from 'src/users/user.model';
 import { GetUserInfoResponseResult, GetUserInfoForSignedResponseResult, GetMovieInfoResponseResult, GetMovieInfoForSignedResponseResult, UpdateMovieRateResponseResult, GetProfileInfoResponseResult, GetRecentRatesResponseResult, GetRecentRatesForSignedResponseResult, SearchResponseResult } from 'src/shared/result.enums';
-import { MovieRate, MovieSuggest, User } from 'src/shared/dto.models';
+import { MovieRate, MovieSuggest, MyNotification, User } from 'src/shared/dto.models';
+import { sendNotificationToClient } from 'src/notify';
 
 @Injectable()
 export class MovieUserService {
@@ -35,6 +36,8 @@ export class MovieUserService {
             updateDate: now.toISOString()
         });
         const res = await newMovieUser.save();
+        if (rate > 4 || rate < 2)
+            this.notifyBuddies(rate, movie, user);
         return {
             result: UpdateMovieRateResponseResult.success,
             movieuser: {
@@ -505,6 +508,8 @@ export class MovieUserService {
             updated.updateDate = (new Date()).toISOString();
         }
         updated.save();
+        if (rate > 4 || rate < 2)
+            this.notifyBuddies(rate, updated.movieId, updated.userId);
         return {
             result: UpdateMovieRateResponseResult.success,
             movieuser: {
@@ -535,7 +540,6 @@ export class MovieUserService {
                 buddies: [],
                 me: userInfo.user
             }
-        console.log("my user info: ", userInfo);
         if (userInfo.user.buddies.length < 1)
             return {
                 result: GetProfileInfoResponseResult.noBuddy,
@@ -568,4 +572,29 @@ export class MovieUserService {
     private getWeightedRate(mu: IMovieUser, user: IUser): number {
         return (mu.rate - 3) * (user.buddies.filter(b => b.buddyId.toString() == mu.userId)[0]?.rate - 3);
     }
+
+    private async notifyBuddies(rate: number, movieId: string, userId: string) {
+        const movie = (await this.movieService.findMovies([movieId]))[0];
+        const username = (await this.userService.find([userId]))[0].username;
+        const userBuddies = await this.userService.getUserBuddies(userId);
+        const alltokens: string[][] = userBuddies.map(a => a.notiftoken);
+        let tokensSingleList: string[] = [];
+        for (const tokens of alltokens) {
+            tokensSingleList = tokensSingleList.concat(tokens);
+        }
+        let msg = "";
+        if (rate < 2)
+            msg = "seems " + username + " hates this movie";
+        else if (rate > 4)
+            msg = username + " loves it, check it out";
+        const notificationData: MyNotification = {
+            title: movie.title,
+            message: msg,
+            movieId: movie.id,
+            img: movie.imageUrl
+        };
+        sendNotificationToClient(tokensSingleList, notificationData);
+    }
+
 }
+

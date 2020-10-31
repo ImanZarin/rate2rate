@@ -36,3 +36,4 @@ lerna-debug.log*
 #
 .env.local
 *.ignore*
+rate2rate-290904-firebase-adminsdk-fd5h3-5bf16ff901.json

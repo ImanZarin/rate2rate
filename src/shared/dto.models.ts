@@ -1,3 +1,4 @@
+import { type } from "os"
 
 export type MovieRate = {
     movieTitle: string;
@@ -43,4 +44,11 @@ export type MovieSuggest = {
     movieImg: string;
     weightedRates: number[];
     likeability: number;
+}
+
+export type MyNotification = {
+    title: string;
+    message: string;
+    img: string;
+    movieId: string;
 }
